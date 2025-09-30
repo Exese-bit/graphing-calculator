@@ -5,13 +5,11 @@ public class Integral extends Formula {
     
     private ArrayList<Object> function;
     private Function equation;
-    private double xVal;
     private double lowerBound;
     private double higherBound;
 
-    public Integral(double xVal, ArrayList<Object> function, double lowerBound, double higherBound) {
+    public Integral(ArrayList<Object> function, double lowerBound, double higherBound) {
         this.function = function;
-        this.xVal = xVal;
         this.lowerBound = lowerBound;
         this.higherBound = higherBound;
         equation = new Function(function);

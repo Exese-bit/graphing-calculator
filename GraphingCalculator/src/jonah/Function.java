@@ -74,10 +74,9 @@ public class Function {
                         formula.set(i, tempfac.evaluate());
                         break;
                     case("int"):
-                        xVal = x;
                         lowerBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         higherBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
-                        Integral tempintegral = new Integral(xVal, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 3)), lowerBound, higherBound);
+                        Integral tempintegral = new Integral(new ArrayList<Object>((ArrayList<Object>)formula.get(i + 3)), lowerBound, higherBound);
                         formula.set(i, tempintegral.evaluate());
                         formula.remove(i + 1);
                         formula.remove(i + 1);
@@ -221,4 +220,46 @@ public class Function {
 		
 		return res;
 	}
+
+    public static ArrayList<Object> getReflectionFormula(double equationValue) {
+        ArrayList<Object> reflectionFormula = new ArrayList<Object>();
+        reflectionFormula.add("pi");
+        reflectionFormula.add("/");
+
+        ArrayList<Object> denominator = new ArrayList<Object>();
+        denominator.add("sin");
+        
+        ArrayList<Object> sin = new ArrayList<Object>();
+        sin.add("pi");
+        sin.add("*");
+        if(equationValue < 0) {
+            sin.add("-");
+        }
+        sin.add(Math.abs(equationValue));
+
+        denominator.add(sin);
+        reflectionFormula.add(denominator);
+        return reflectionFormula;
+    }
+
+    public static ArrayList<Object> getGammaIntegral(double nVal) {
+        ArrayList<Object> returnArr = new ArrayList<Object>();
+        returnArr.add("x");
+        returnArr.add("^");
+        if(nVal < 0) {
+            nVal = 1 - nVal;
+        }
+        if(nVal - 1 < 0) {
+            returnArr.add("-");
+        }
+        returnArr.add(Math.abs(nVal - 1));
+        returnArr.add("*");
+        returnArr.add("e");
+        returnArr.add("^");
+        ArrayList<Object> minusX = new ArrayList<Object>();
+        minusX.add("-");
+        minusX.add("x");
+        returnArr.add(minusX);
+        return returnArr;
+    }
 }

@@ -14,16 +14,25 @@ public class Factorial extends Formula {
     }
 
     public double evaluate(){
-        double equationValue = (equation.evaluate(xVal, new ArrayList<Object>((ArrayList<Object>)function), 0));
-        double product = 1;
-        if((equationValue < 0)) {
+        double equationValue = (equation.evaluate(xVal, new ArrayList<Object>((ArrayList<Object>)function), 0)) + 1;
+        function = Function.getGammaIntegral(equationValue);
+        Integral gammaFunction = new Integral(function, 0, 20);
+        if(equationValue - 1 > 0) {
+            return gammaFunction.evaluate();
+        } else if(equationValue - 1 < 0 && equationValue % 1 != 0) {
+            function = Function.getReflectionFormula(equationValue);
+            equation = new Function(function);
+            double reflectionValue = equation.evaluate(equationValue, function, 0); 
+
+            function = Function.getGammaIntegral(-equationValue);
+            gammaFunction = new Integral(function, 0, 20);
+            double difference = gammaFunction.evaluate();
+
+            return reflectionValue/difference;
+        } else if(equationValue == 0) {
+            return 1;
+        } else {
             return Double.NaN;
         }
-        int higherBound = (int)equationValue;
-        for(int i = 0; i < higherBound; i++) {
-            product *= higherBound - i;
-        }
-
-        return product;
     }
 }
