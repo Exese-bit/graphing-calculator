@@ -588,6 +588,7 @@ public class App extends JPanel {
 	}
 	
 	public static void setUpGraph() {
+        grid.clearPixels();
 		parseIndex.clear();
 		yValuePositions.clear();
 		yPointPositions.clear();
@@ -597,11 +598,13 @@ public class App extends JPanel {
 		initialX.clear();
 		finalX.clear();
 		for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+            /*
 			for(int x = 0; x < 601; x += 1) {
 				for(int y = 0; y < 601; y += 1) {
 					grid.setPoint(x, y, Color.white, false, functionIndex);
 				}
 			}
+            */
             yPairs.add(new ArrayList<Integer[]>());
             xPairs.add(new ArrayList<Integer[]>());
 			parseIndex.add(0);

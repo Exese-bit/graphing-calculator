@@ -13,6 +13,9 @@ public class PixelGrid extends JPanel {
 	private static ArrayList<boolean[][]> pixelVisible = new ArrayList<boolean[][]>();
 	private static int functionAmount;
 	private static ArrayList<String> functionCollection;
+
+    private static ArrayList<Integer> pixelX = new ArrayList<Integer>();
+    private static ArrayList<Integer> pixelY = new ArrayList<Integer>();
 	
 	public PixelGrid(ArrayList<String> functionCollections) {
 		functionCollection = functionCollections;
@@ -43,13 +46,28 @@ public class PixelGrid extends JPanel {
 	}
 	
 	public void setPoint(int x, int y, Color color, boolean isVisible, int functionIndex) {
-        if(x < 601 && y < 601 && x > -1 && y > -1) {
+        if(functionIndex == -1) {
+            pixelColors.get(0)[x][y] = Color.white;
+            pixelVisible.get(0)[x][y] = false;
+        } else if(x < 601 && y < 601 && x > -1 && y > -1) {
             pixelColors.get(functionIndex)[x][y] = color;
             pixelVisible.get(functionIndex)[x][y] = isVisible;
+            pixelX.add(x);
+            pixelY.add(y);
 		}
 		repaint(x, y, 1, 1);
 	}
-	
+    
+    public void clearPixels() {
+        int size = pixelX.size() - 1;
+        while(size > -1) {
+            setPoint(pixelX.get(size), pixelY.get(size), Color.white, false, -1);
+            pixelX.remove(size);
+            pixelY.remove(size);
+            size--;
+        }
+    }
+
 	public void setPixel(int x, int y, Color color, boolean showPixel) {
 		boolean isVisible = false;
 		for(int i = 0; i < functionAmount - 1; i++) {
