@@ -19,12 +19,16 @@ public class Factorial extends Formula {
         Integral gammaFunction = new Integral(function, 0, 20);
         if(equationValue - 1 > 0) {
             return gammaFunction.evaluate();
-        } else if(equationValue - 1 < 0 && equationValue % 1 != 0) {
+        } else if(equationValue - 1 > -1 && equationValue != 0) {
+            function = Function.getGammaIntegral(equationValue + 1);
+            gammaFunction = new Integral(function, 0, 20);
+            return gammaFunction.evaluate()/equationValue;
+        } else if(equationValue - 1 < 1 && equationValue % 1 != 0) {
             function = Function.getReflectionFormula(equationValue);
             equation = new Function(function);
-            double reflectionValue = equation.evaluate(equationValue, function, 0); 
+            double reflectionValue = equation.evaluate(equationValue, function, 0);
 
-            function = Function.getGammaIntegral(-equationValue);
+            function = Function.getGammaIntegral(1 - equationValue);
             gammaFunction = new Integral(function, 0, 20);
             double difference = gammaFunction.evaluate();
 

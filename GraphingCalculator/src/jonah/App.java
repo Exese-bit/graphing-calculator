@@ -589,6 +589,7 @@ public class App extends JPanel {
 	
 	public static void setUpGraph() {
         grid.clearPixels();
+        grid.clearPixels();
 		parseIndex.clear();
 		yValuePositions.clear();
 		yPointPositions.clear();

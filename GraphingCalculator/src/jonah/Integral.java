@@ -24,6 +24,9 @@ public class Integral extends Formula {
         double midpoint = (lower + higher)/2;
         double s1 = findIntegral(lower, midpoint);
         double s2 = findIntegral(midpoint, higher);
+        if((s1 + "").equals("Infinity") | (s2 + "").equals("Infinity")) {
+            return originalValue;
+        }
         if(Math.abs(s1 + s2 - originalValue) < 0.001 | depth > 15) {
             return s1 + s2;
         } else {
