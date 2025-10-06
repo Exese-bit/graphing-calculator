@@ -68,6 +68,10 @@ public class PixelGrid extends JPanel {
         }
     }
 
+    public boolean hasPixel(int x, int y, int functionIndex) {
+        return pixelVisible.get(functionIndex)[x][y];
+    }
+
 	public void setPixel(int x, int y, Color color, boolean showPixel) {
 		boolean isVisible = false;
 		for(int i = 0; i < functionAmount - 1; i++) {
