@@ -123,7 +123,8 @@ public class App extends JPanel {
 			yLabels[i].setOpaque(false);
 			drawerPanel.add(yLabels[i], Integer.valueOf(1));
 		}
-		
+	    System.out.println();	
+        System.out.println("Creating window...");
 		grid = new PixelGrid(functionCollection);
 		grid.setBounds(0, 0, 601, 601);
 		drawerPanel.add(grid, Integer.valueOf(1));
@@ -145,7 +146,7 @@ public class App extends JPanel {
 		createLabels();
 		
 		drawerPanel.setVisible(true);
-		
+        System.out.println("Done!");
 		grid.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyChar() == 'i' | e.getKeyChar() == 'o') {
@@ -599,13 +600,6 @@ public class App extends JPanel {
 		initialX.clear();
 		finalX.clear();
 		for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-            /*
-			for(int x = 0; x < 601; x += 1) {
-				for(int y = 0; y < 601; y += 1) {
-					grid.setPoint(x, y, Color.white, false, functionIndex);
-				}
-			}
-            */
             yPairs.add(new ArrayList<Integer[]>());
             xPairs.add(new ArrayList<Integer[]>());
 			parseIndex.add(0);
@@ -642,7 +636,6 @@ public class App extends JPanel {
 		double outOfBoundsHigh = maximumY - precision;
 		double outOfBoundsLow = minimumY + precision;
 
-    
 		for(int x = 0; x < 601; x++) {
             int pointer = yPairs.get(functionIndex).size() - 1;
 			yValuePositions.get(functionIndex)[x] = "OUTSIDE";
@@ -760,7 +753,7 @@ public class App extends JPanel {
                 middleSlope = 1/middleSlope;
                 int counter = 0;
                 if(middleSlope > 0) {
-                    for(int y = (int)y1; y <= (int)y2; y++) {
+                    for(int y = Math.max((int)y1, 0); y <= Math.min(601, (int)y2); y++) {
                         double point = x1 + middleSlope * counter;
                         CreatePixel((int)point + 1, y, functionIndex, Math.abs(1 - (((int)point + 1) - point)));
                         CreatePixel((int)point, y, functionIndex, 1);
@@ -769,7 +762,7 @@ public class App extends JPanel {
                         counter++;
                     }
                 } else {
-                    for(int y = (int)y2; y <= (int)y1; y++) {
+                    for(int y = Math.max((int)y2, 0); y <= Math.min((int)y1, 601); y++) {
                         double point = x2 + middleSlope * counter;
                         CreatePixel((int)point + 1, y, functionIndex, Math.abs(1 - (((int)point + 1) - point)));
                         CreatePixel((int)point, y, functionIndex, 1);
