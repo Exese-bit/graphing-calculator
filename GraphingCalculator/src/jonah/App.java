@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import jonah.Function;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -43,6 +44,10 @@ public class App extends JPanel {
 
     private static ArrayList<ArrayList<Integer[]>> yPairs = new ArrayList<ArrayList<Integer[]>>();
 	private static ArrayList<ArrayList<Integer[]>> xPairs = new ArrayList<ArrayList<Integer[]>>();
+    
+    private static ArrayList<ArrayList<Integer>> allYPoints = new ArrayList<ArrayList<Integer>>();
+	private static ArrayList<ArrayList<Integer>> allXPoints = new ArrayList<ArrayList<Integer>>();
+    private static ArrayList<HashSet<ArrayList<Integer>>> allCoordinates = new ArrayList<HashSet<ArrayList<Integer>>>();
 
 	private static PixelGrid grid;
 	
@@ -59,7 +64,10 @@ public class App extends JPanel {
 	
 	private static JLabel[] xLabels;
 	private static JLabel[] yLabels;
-	
+    
+    private static JLabel[] pointVisualizerLabels;
+
+
 	public static void main(String[] args) {
 		xLines = new double[24];
 		yLines = new double[24];
@@ -73,7 +81,9 @@ public class App extends JPanel {
 		
 		prevX = null;
 		prevY = null;
-		
+	    
+        pointVisualizerLabels = new JLabel[7];
+
 		Scanner userinput = new Scanner(System.in);
 
 		System.out.println("____________________________________________________\n");
@@ -123,6 +133,17 @@ public class App extends JPanel {
 			yLabels[i].setOpaque(false);
 			drawerPanel.add(yLabels[i], Integer.valueOf(1));
 		}
+        
+        for(int i = 0; i < 7; i++) {
+            pointVisualizerLabels[i] = new JLabel();
+            pointVisualizerLabels[i].setOpaque(true);
+            pointVisualizerLabels[i].setVisible(false);
+            pointVisualizerLabels[i].setBackground(Color.black);
+            drawerPanel.add(pointVisualizerLabels[i], Integer.valueOf(3));
+        }
+        pointVisualizerLabels[4].setBackground(Color.white);
+        pointVisualizerLabels[6].setBackground(Color.white);
+        
 	    System.out.println();	
         System.out.println("Creating window...");
 		grid = new PixelGrid(functionCollection);
@@ -147,6 +168,8 @@ public class App extends JPanel {
 		
 		drawerPanel.setVisible(true);
         System.out.println("Done!");
+        movePointVisualizer(true, 10, 10);
+
 		grid.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyChar() == 'i' | e.getKeyChar() == 'o') {
@@ -258,7 +281,33 @@ public class App extends JPanel {
 			public void mousePressed(MouseEvent e) {
 				grid.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				prevX = e.getX();
-				prevY = e.getY();
+				prevY = e.getY(); 
+                int touching = -1;
+                for(int i = 0; i < functionCollection.size(); i++) {
+                    ArrayList<Integer> test = new ArrayList<Integer>();
+                    test.add(e.getX() - 1);
+                    test.add(603 - e.getY());
+                    for(int k = 0; k < 3; k++) {
+                        for(int j = 0; j < 7; j++) {
+                            if(allCoordinates.get(i).contains(test)) {
+                               touching = i;
+                            }
+                            test.set(1, test.get(1) - 1);
+                        }
+                        test.set(0, test.get(0) + 1);
+                        test.set(1, 603 - e.getY());
+                    }
+                }
+                if(touching == -1) {
+                    prevX = e.getX();
+				    prevY = e.getY();
+                    movePointVisualizer(false, 1, 1);
+                } else {
+                    int index = allXPoints.get(touching).indexOf(prevX);
+                    if(index > -1) {
+                        movePointVisualizer(true, e.getX(), 601 - allYPoints.get(touching).get(index));
+                    }
+                }
 			}
 			public void mouseReleased(MouseEvent e) {
 				grid.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -310,7 +359,19 @@ public class App extends JPanel {
 		});
 		userinput.close();
 	}
-	
+    
+    public static void movePointVisualizer(boolean isVisible, int x, int y) {
+        for(int i = 0; i < 5; i++) {
+             pointVisualizerLabels[i].setVisible(isVisible);
+        }
+        
+        pointVisualizerLabels[0].setBounds(x - 1, y - 2, 3, 1);
+        pointVisualizerLabels[1].setBounds(x + 2, y - 1, 1, 3);
+        pointVisualizerLabels[2].setBounds(x - 1, y + 2, 3, 1);
+        pointVisualizerLabels[3].setBounds(x - 2, y - 1, 1, 3);
+        pointVisualizerLabels[4].setBounds(x - 1, y - 1, 3, 3);
+    }
+
 	public static void createLabels() {
 		for(int i = 0; i < 23; i++) {
 			if(xLinePositions[i] > -1 && xLinePositions[i] < 601) {
@@ -597,11 +658,17 @@ public class App extends JPanel {
 		yValues.clear();
         yPairs.clear();
         xPairs.clear();
+        allXPoints.clear();
+        allYPoints.clear();
+        allCoordinates.clear();
 		initialX.clear();
 		finalX.clear();
 		for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
             yPairs.add(new ArrayList<Integer[]>());
             xPairs.add(new ArrayList<Integer[]>());
+            allYPoints.add(new ArrayList<Integer>());
+            allXPoints.add(new ArrayList<Integer>());
+            allCoordinates.add(new HashSet<ArrayList<Integer>>());
 			parseIndex.add(0);
 			yValuePositions.add(new String[601]);
 			yPointPositions.add(new int[601]);
@@ -641,7 +708,7 @@ public class App extends JPanel {
 			yValuePositions.get(functionIndex)[x] = "OUTSIDE";
 			yPointPositions.get(functionIndex)[x] = 0;
             double yPosition = yValues.get(functionIndex)[x];
-			if(yPosition < outOfBoundsHigh && yPosition > outOfBoundsLow) {
+			if(yPosition <= outOfBoundsHigh && yPosition >= outOfBoundsLow) {
                 int yPoint = getPoint(increment, yPosition, initialY);
                 if(yPairs.get(functionIndex).size() == 0) {
                     yPairs.get(functionIndex).add(new Integer[2]);
@@ -740,10 +807,24 @@ public class App extends JPanel {
                     double point = middleSlope * (x - x1) + y1;
                     CreatePixel(x, (int)point + 1, functionIndex, Math.abs(1 - (((int)point + 1) - point)));
                     CreatePixel(x, (int)point, functionIndex, 1);
+                    if(x != (int)x2) {
+                        allXPoints.get(functionIndex).add(x);
+                        allYPoints.get(functionIndex).add((int)point);
+                        ArrayList<Integer> coordinate = new ArrayList<Integer>();
+                        coordinate.add(x);
+                        coordinate.add((int)point);
+                        allCoordinates.get(functionIndex).add(coordinate);
+                    }
                     point--;
                     CreatePixel(x, (int)point, functionIndex, Math.abs(1 - ((point - (int)point))));
                 }
             } else if(Math.abs(middleSlope) == 1) {
+                allXPoints.get(functionIndex).add((int)x1);
+                allYPoints.get(functionIndex).add((int)y1);
+                ArrayList<Integer> coordinate = new ArrayList<Integer>();
+                coordinate.add((int)x1);
+                coordinate.add((int)y1);
+                allCoordinates.get(functionIndex).add(coordinate);
                 CreatePixel((int)x1, (int)y1 + 1, functionIndex, 0.5);
                 CreatePixel((int)x1, (int)y1 - 1, functionIndex, 0.5);
                 CreatePixel((int)x2, (int)y2 + 1, functionIndex, 0.5);
@@ -757,6 +838,14 @@ public class App extends JPanel {
                         double point = x1 + middleSlope * counter;
                         CreatePixel((int)point + 1, y, functionIndex, Math.abs(1 - (((int)point + 1) - point)));
                         CreatePixel((int)point, y, functionIndex, 1);
+                        if(y != Math.min(601, (int)y2)) {
+                            allXPoints.get(functionIndex).add((int)point);
+                            allYPoints.get(functionIndex).add(y);
+                            ArrayList<Integer> coordinate = new ArrayList<Integer>();
+                            coordinate.add((int)point);
+                            coordinate.add(y);
+                            allCoordinates.get(functionIndex).add(coordinate);
+                        }
                         point--;
                         CreatePixel((int)point, y, functionIndex, Math.abs(1 - ((point - (int)point))));
                         counter++;
@@ -766,6 +855,14 @@ public class App extends JPanel {
                         double point = x2 + middleSlope * counter;
                         CreatePixel((int)point + 1, y, functionIndex, Math.abs(1 - (((int)point + 1) - point)));
                         CreatePixel((int)point, y, functionIndex, 1);
+                        if(y != Math.max((int)y2, 0)) {
+                            allXPoints.get(functionIndex).add((int)point);
+                            allYPoints.get(functionIndex).add(y);
+                            ArrayList<Integer> coordinate = new ArrayList<Integer>();
+                            coordinate.add((int)point);
+                            coordinate.add(y);
+                            allCoordinates.get(functionIndex).add(coordinate);
+                        }
                         point--;
                         CreatePixel((int)point, y, functionIndex, Math.abs(1 - ((point - (int)point))));
                         counter++;
