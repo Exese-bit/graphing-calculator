@@ -168,7 +168,7 @@ public class App extends JPanel {
 		
 		drawerPanel.setVisible(true);
         System.out.println("Done!");
-        movePointVisualizer(true, 10, 10);
+        movePointVisualizer(true, 10, 10, 0);
 
 		grid.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
@@ -301,11 +301,11 @@ public class App extends JPanel {
                 if(touching == -1) {
                     prevX = e.getX();
 				    prevY = e.getY();
-                    movePointVisualizer(false, 1, 1);
+                    movePointVisualizer(false, 1, 1, 0);
                 } else {
                     int index = allXPoints.get(touching).indexOf(prevX);
                     if(index > -1) {
-                        movePointVisualizer(true, e.getX(), 601 - allYPoints.get(touching).get(index));
+                        movePointVisualizer(true, e.getX(), 601 - allYPoints.get(touching).get(index), touching);
                     }
                 }
 			}
@@ -360,11 +360,17 @@ public class App extends JPanel {
 		userinput.close();
 	}
     
-    public static void movePointVisualizer(boolean isVisible, int x, int y) {
+    public static void movePointVisualizer(boolean isVisible, int x, int y, int functionIndex) {
         for(int i = 0; i < 5; i++) {
              pointVisualizerLabels[i].setVisible(isVisible);
         }
         
+        double increment = (maximumX - minimumX)/600;
+
+        if(isVisible) {
+            System.out.println((minimumX + increment * x) + ", " + yValues.get(functionIndex)[x]);
+        }
+
         pointVisualizerLabels[0].setBounds(x - 1, y - 2, 3, 1);
         pointVisualizerLabels[1].setBounds(x + 2, y - 1, 1, 3);
         pointVisualizerLabels[2].setBounds(x - 1, y + 2, 3, 1);
