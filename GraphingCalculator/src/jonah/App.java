@@ -67,6 +67,9 @@ public class App extends JPanel {
     
     private static JLabel[] pointVisualizerLabels;
 
+    private static boolean isShowingPoint;
+    private static int selectedFunction;
+
 
 	public static void main(String[] args) {
 		xLines = new double[24];
@@ -83,6 +86,8 @@ public class App extends JPanel {
 		prevY = null;
 	    
         pointVisualizerLabels = new JLabel[7];
+
+        isShowingPoint = false;
 
 		Scanner userinput = new Scanner(System.in);
 
@@ -113,6 +118,7 @@ public class App extends JPanel {
 				functionCollection.add(func);
 			}
 		}
+
 		JFrame frame = new JFrame("Pixel Grid");
 		drawerPanel = new JLayeredPane();
 		drawerPanel.setPreferredSize(new Dimension(601, 601));
@@ -139,7 +145,12 @@ public class App extends JPanel {
             pointVisualizerLabels[i].setOpaque(true);
             pointVisualizerLabels[i].setVisible(false);
             pointVisualizerLabels[i].setBackground(Color.black);
-            drawerPanel.add(pointVisualizerLabels[i], Integer.valueOf(3));
+            if(i != 6) {
+                drawerPanel.add(pointVisualizerLabels[i], Integer.valueOf(3));
+            } else {
+                drawerPanel.add(pointVisualizerLabels[i], Integer.valueOf(4));
+                pointVisualizerLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
+            }
         }
         pointVisualizerLabels[4].setBackground(Color.white);
         pointVisualizerLabels[6].setBackground(Color.white);
@@ -168,118 +179,128 @@ public class App extends JPanel {
 		
 		drawerPanel.setVisible(true);
         System.out.println("Done!");
-        movePointVisualizer(true, 10, 10, 0);
+        movePointVisualizer(false, 10, 10, 0);
 
 		grid.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyChar() == 'i' | e.getKeyChar() == 'o') {
-					double lineDiff = 0;
-					for(int i = 0; i < 23; i++) {
-						if(xLinePositions[i] != -1 && xLinePositions[i] != 601) {
-							lineDiff = xLinePositions[i + 1] - xLinePositions[i];
-							i = 23;
-						}
-					}
-					if(e.getKeyChar() == 'o') { //zoom out
-						deleteLines();
-						zoom(-2);
-						for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-							graph(functionIndex);
-						}
-						createLines();
-						if(lineDiff < 60) {
-							deleteLines();
-							updateLines(1);
-							createLines();
-						}
-					}
-					if(e.getKeyChar() == 'i') { //zoom in
-						deleteLines();
-						zoom(+2);
-						for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-							graph(functionIndex);
-						}
-						createLines();
-						if(lineDiff > 100) {
-							deleteLines();
-							updateLines(-1);
-							createLines();
-						}
-					}
-					deleteLines();
-					fixGraph();
-					createLines();
-					createLabels();
-				}
+                if(!isShowingPoint) {
+                    if(e.getKeyChar() == 'i' | e.getKeyChar() == 'o') {
+                        double lineDiff = 0;
+                        for(int i = 0; i < 23; i++) {
+                            if(xLinePositions[i] != -1 && xLinePositions[i] != 601) {
+                                lineDiff = xLinePositions[i + 1] - xLinePositions[i];
+                                i = 23;
+                            }
+                        }
+                        if(e.getKeyChar() == 'o') { //zoom out
+                            deleteLines();
+                            zoom(-2);
+                            for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+                                graph(functionIndex);
+                            }
+                            createLines();
+                            if(lineDiff < 60) {
+                                deleteLines();
+                                updateLines(1);
+                                createLines();
+                            }
+                        }
+                        if(e.getKeyChar() == 'i') { //zoom in
+                            deleteLines();
+                            zoom(+2);
+                            for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+                                graph(functionIndex);
+                            }
+                            createLines();
+                            if(lineDiff > 100) {
+                                deleteLines();
+                                updateLines(-1);
+                                createLines();
+                            }
+                        }
+                        deleteLines();
+                        fixGraph();
+                        createLines();
+                        createLabels();
+                    }
+                }
 			}
 		});
 		grid.addMouseMotionListener(new MouseAdapter() {
 			public void mouseDragged(MouseEvent e) {
-				if(e.getX() - prevX != 0) {
-					int diff = e.getX() - prevX;
-					deleteLines();
-					shiftYValues(diff);
-					setUpGraph();
-					prevX = e.getX();
-					for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-						graph(functionIndex);
-					}
-					createLines();
-					double lineDiff = Math.abs(xLines[13] - xLines[12]);
-					if(Math.abs(shiftX) > lineDiff) {
-						while(Math.abs(shiftX) > lineDiff) {
-							deleteLines();
-							if(shiftX > 0) {
-								for(int i = 0; i < 23; i++) {
-									xLines[i] -= lineDiff;
-								}
-								shiftX -= lineDiff;
-							} else if(shiftX < 0) {
-								for(int i = 0; i < 23; i++) {
-									xLines[i] += lineDiff;
-								}
-								shiftX += lineDiff;
-							}
-							createLines();
-							createLabels();
-						}
-					}
-				}
-				if(e.getY() - prevY != 0) {
-					int diff = e.getY() - prevY;
-					deleteLines();
-					displaceYValues(diff);
-					setUpGraph();
-					prevY = e.getY();
-					for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-						graph(functionIndex);
-					}
-					createLines();
-					double lineDiff = Math.abs(xLines[13] - xLines[12]);
-					if(Math.abs(shiftY) > lineDiff) {
-						while(Math.abs(shiftY) > lineDiff) {
-							deleteLines();
-							if(shiftY > 0) {
-								for(int i = 0; i < 23; i++) {
-									yLines[i] -= lineDiff;
-								}
-								shiftY -= lineDiff;
-							} else if(shiftY < 0) {
-								for(int i = 0; i < 23; i++) {
-									yLines[i] += lineDiff;
-								}
-								shiftY += lineDiff;
-							}
-							createLines();
-						}
-					}
-				}
-				createLabels();
+                if(!isShowingPoint) {
+                    if(e.getX() - prevX != 0) {
+                        int diff = e.getX() - prevX;
+                        deleteLines();
+                        shiftYValues(diff);
+                        setUpGraph();
+                        prevX = e.getX();
+                        for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+                            graph(functionIndex);
+                        }
+                        createLines();
+                        double lineDiff = Math.abs(xLines[13] - xLines[12]);
+                        if(Math.abs(shiftX) > lineDiff) {
+                            while(Math.abs(shiftX) > lineDiff) {
+                                deleteLines();
+                                if(shiftX > 0) {
+                                    for(int i = 0; i < 23; i++) {
+                                        xLines[i] -= lineDiff;
+                                    }
+                                    shiftX -= lineDiff;
+                                } else if(shiftX < 0) {
+                                    for(int i = 0; i < 23; i++) {
+                                        xLines[i] += lineDiff;
+                                    }
+                                    shiftX += lineDiff;
+                                }
+                                createLines();
+                                createLabels();
+                            }
+                        }
+                    }
+                    if(e.getY() - prevY != 0) {
+                        int diff = e.getY() - prevY;
+                        deleteLines();
+                        displaceYValues(diff);
+                        setUpGraph();
+                        prevY = e.getY();
+                        for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+                            graph(functionIndex);
+                        }
+                        createLines();
+                        double lineDiff = Math.abs(xLines[13] - xLines[12]);
+                        if(Math.abs(shiftY) > lineDiff) {
+                            while(Math.abs(shiftY) > lineDiff) {
+                                deleteLines();
+                                if(shiftY > 0) {
+                                    for(int i = 0; i < 23; i++) {
+                                        yLines[i] -= lineDiff;
+                                    }
+                                    shiftY -= lineDiff;
+                                } else if(shiftY < 0) {
+                                    for(int i = 0; i < 23; i++) {
+                                        yLines[i] += lineDiff;
+                                    }
+                                    shiftY += lineDiff;
+                                }
+                                createLines();
+                            }
+                        }
+                    }
+                    createLabels();
+                } else {
+                    if(e.getX() > -1 && e.getX() < 601 && e.getY() > -1 && e.getY() < 601) {
+                        int index = allXPoints.get(selectedFunction).indexOf(e.getX());
+                        if(index != -1) {
+                            movePointVisualizer(true, e.getX(), 601 - allYPoints.get(selectedFunction).get(index), selectedFunction);
+                        }
+                    }
+                }
 			}
 		});
 		grid.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
-				grid.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				prevX = e.getX();
 				prevY = e.getY(); 
                 int touching = -1;
@@ -301,8 +322,12 @@ public class App extends JPanel {
                 if(touching == -1) {
                     prevX = e.getX();
 				    prevY = e.getY();
+                    grid.setCursor(new Cursor(Cursor.HAND_CURSOR));
                     movePointVisualizer(false, 1, 1, 0);
+                    isShowingPoint = false;
                 } else {
+                    isShowingPoint = true;
+                    selectedFunction = touching;
                     int index = allXPoints.get(touching).indexOf(prevX);
                     if(index > -1) {
                         movePointVisualizer(true, e.getX(), 601 - allYPoints.get(touching).get(index), touching);
@@ -310,65 +335,99 @@ public class App extends JPanel {
                 }
 			}
 			public void mouseReleased(MouseEvent e) {
-				grid.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				prevX = null;
-				prevY = null;
+                if(!isShowingPoint) {
+				    grid.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				    prevX = null;
+				    prevY = null;
+                } else {
+                    movePointVisualizer(false, 1, 1, 0);
+                    isShowingPoint = false;
+                    selectedFunction = -1;
+                }
 			}
 		});
 		
 		grid.addMouseWheelListener(new MouseAdapter() {
 			public void mouseWheelMoved(MouseWheelEvent e) {
-				double lineDiff = 0;
-				for(int i = 0; i < 23; i++) {
-					if(xLinePositions[i] != -1 && xLinePositions[i] != 601) {
-						lineDiff = xLinePositions[i + 1] - xLinePositions[i];
-						i = 23;
-					}
-				}
-				if(e.getWheelRotation() > 0) { //zoom out
-					deleteLines();
-					zoom(-3);
-					for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-						graph(functionIndex);
-					}
-					createLines();
-					if(lineDiff < 60) {
-						deleteLines();
-						updateLines(1);
-						createLines();
-					}
-				}
-				if(e.getWheelRotation() < 0) { //zoom in
-					deleteLines();
-					zoom(+3);
-					for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-						graph(functionIndex);
-					}
-					createLines();
-					if(lineDiff > 100) {
-						deleteLines();
-						updateLines(-1);
-						createLines();
-					}
-				}
-				deleteLines();
-				fixGraph();
-				createLines();
-				createLabels();
+                if(!isShowingPoint) {
+                    double lineDiff = 0;
+                    for(int i = 0; i < 23; i++) {
+                        if(xLinePositions[i] != -1 && xLinePositions[i] != 601) {
+                            lineDiff = xLinePositions[i + 1] - xLinePositions[i];
+                            i = 23;
+                        }
+                    }
+                    if(e.getWheelRotation() > 0) { //zoom out
+                        deleteLines();
+                        zoom(-3);
+                        for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+                            graph(functionIndex);
+                        }
+                        createLines();
+                        if(lineDiff < 60) {
+                            deleteLines();
+                            updateLines(1);
+                            createLines();
+                        }
+                    }
+                    if(e.getWheelRotation() < 0) { //zoom in
+                        deleteLines();
+                        zoom(+3);
+                        for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+                            graph(functionIndex);
+                        }
+                        createLines();
+                        if(lineDiff > 100) {
+                            deleteLines();
+                            updateLines(-1);
+                            createLines();
+                        }
+                    }
+                    deleteLines();
+                    fixGraph();
+                    createLines();
+                    createLabels();
+                }
 			}
 		});
 		userinput.close();
 	}
     
     public static void movePointVisualizer(boolean isVisible, int x, int y, int functionIndex) {
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < 7; i++) {
              pointVisualizerLabels[i].setVisible(isVisible);
         }
         
         double increment = (maximumX - minimumX)/600;
 
         if(isVisible) {
-            System.out.println((minimumX + increment * x) + ", " + yValues.get(functionIndex)[x]);
+            String xPrint = formatNumber(minimumX + increment * x);
+            String yPrint = formatNumber(yValues.get(functionIndex)[x]);
+            if(Math.abs(Double.parseDouble(yPrint)) < 0.0000000001) {
+                yPrint = "0";
+            }
+            if(Math.abs(Double.parseDouble(xPrint)) < 0.0000000001) {
+                xPrint = "0";
+            }
+
+            if((xPrint).indexOf("E") != -1) {
+                double exponent = Double.parseDouble(xPrint.substring(xPrint.indexOf("E") + 1));
+                if(exponent > -3 && exponent < 4) {
+                    xPrint = round((minimumX + increment * x), 3) + "";
+                }
+            }
+            if((yPrint).indexOf("E") != -1) {
+                double exponent = Double.parseDouble(yPrint.substring(yPrint.indexOf("E") + 1));
+                if(exponent > -3 && exponent < 4) {
+                    yPrint = round((yValues.get(functionIndex)[x]), 3) + "";
+                }
+            }
+
+            String textPrint = (xPrint + ", " + yPrint);
+            int length = 4 * textPrint.length(); 
+            pointVisualizerLabels[6].setBounds(x - length, y - 30, length * 2, 20);
+            pointVisualizerLabels[6].setText("(" + textPrint + ")");
+            pointVisualizerLabels[5].setBounds(x - length - 1, y - 31, length * 2 + 2, 22);
         }
 
         pointVisualizerLabels[0].setBounds(x - 1, y - 2, 3, 1);
