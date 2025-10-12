@@ -15,18 +15,15 @@ import jonah.Function;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
 public class App extends JPanel {
+    
+    //Variables for parsing + keep track of graph positions
 	private static ArrayList<Integer> parseIndex = new ArrayList<Integer>();
 	private static ArrayList<Double> initialX = new ArrayList<Double>();
 	private static ArrayList<Double> finalX = new ArrayList<Double>();
 	private static ArrayList<double[]> yValues = new ArrayList<double[]>();
-	private static JLayeredPane drawerPanel;
 	private static ArrayList<String[]> yValuePositions = new ArrayList<String[]>();
 	private static ArrayList<int[]> yPointPositions = new ArrayList<int[]>();
 	private static ArrayList<String> functionCollection;
@@ -37,57 +34,41 @@ public class App extends JPanel {
 						new Color(201, 109, 22), //orange
 						new Color(212, 48, 197), //pink
 						new Color(120, 48, 212)};  // purple
+    private static ArrayList<ArrayList<Integer[]>> yPairs = new ArrayList<ArrayList<Integer[]>>();
+	private static ArrayList<ArrayList<Integer[]>> xPairs = new ArrayList<ArrayList<Integer[]>>();
+    private static ArrayList<ArrayList<Integer>> allYPoints = new ArrayList<ArrayList<Integer>>();
+	private static ArrayList<ArrayList<Integer>> allXPoints = new ArrayList<ArrayList<Integer>>();
+    private static ArrayList<HashSet<ArrayList<Integer>>> allCoordinates = new ArrayList<HashSet<ArrayList<Integer>>>();
+
+    //range variables
 	private static double minimumX;
 	private static double maximumX;
 	private static double minimumY;
 	private static double maximumY;
 
-    private static ArrayList<ArrayList<Integer[]>> yPairs = new ArrayList<ArrayList<Integer[]>>();
-	private static ArrayList<ArrayList<Integer[]>> xPairs = new ArrayList<ArrayList<Integer[]>>();
-    
-    private static ArrayList<ArrayList<Integer>> allYPoints = new ArrayList<ArrayList<Integer>>();
-	private static ArrayList<ArrayList<Integer>> allXPoints = new ArrayList<ArrayList<Integer>>();
-    private static ArrayList<HashSet<ArrayList<Integer>>> allCoordinates = new ArrayList<HashSet<ArrayList<Integer>>>();
-
-	private static PixelGrid grid;
-	
+    //variables to handle pan + zoom
 	private static Integer prevX;
 	private static Integer prevY;
-	
 	private static Double shiftX;
 	private static Double shiftY;
-	
+	private static boolean isShowingPoint;
+    private static int selectedFunction;
+
+    //variables to handle axis lines
 	private static double[] xLines;
 	private static double[] yLines;
 	private static int[] xLinePositions;
 	private static int[] yLinePositions;
-	
+    
+    //variables for graphics 
+    private static PixelGrid grid;
+    private static JLayeredPane drawerPanel;
+    private static JFrame frame;
 	private static JLabel[] xLabels;
 	private static JLabel[] yLabels;
-    
     private static JLabel[] pointVisualizerLabels;
-
-    private static boolean isShowingPoint;
-    private static int selectedFunction;
-
-
+    
 	public static void main(String[] args) {
-		xLines = new double[24];
-		yLines = new double[24];
-		xLinePositions = new int[24];
-		yLinePositions = new int[24];
-		xLines[23] = 0;
-		yLines[23] = 0;
-		
-		shiftX = 0.0;
-		shiftY = 0.0;
-		
-		prevX = null;
-		prevY = null;
-	    
-        pointVisualizerLabels = new JLabel[7];
-
-        isShowingPoint = false;
 
 		Scanner userinput = new Scanner(System.in);
 
@@ -101,12 +82,7 @@ public class App extends JPanel {
 		System.out.println("____________________________________________________");
 		functionCollection = new ArrayList<String>();
 		boolean startGraph = false;
-		
-		minimumX = -10;
-		maximumX = 10;
-		minimumY = -10;
-		maximumY = 10;
-		
+	    
 		while(!startGraph) {
 			System.out.println();
 			System.out.println("Input your next Function below: (Type \"GRAPH\" to confirm all functions)");
@@ -118,57 +94,9 @@ public class App extends JPanel {
 				functionCollection.add(func);
 			}
 		}
+        
+        drawGUI();
 
-		JFrame frame = new JFrame("Pixel Grid");
-		drawerPanel = new JLayeredPane();
-		drawerPanel.setPreferredSize(new Dimension(601, 601));
-		
-		xLabels = new JLabel[23];
-		yLabels = new JLabel[23];
-		for(int i = 0; i < 23; i++) {
-			xLabels[i] = new JLabel();
-			xLabels[i].setVisible(true);
-			xLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
-			xLabels[i].setVerticalAlignment(SwingConstants.CENTER);
-			xLabels[i].setOpaque(false);
-			drawerPanel.add(xLabels[i], Integer.valueOf(1));
-			yLabels[i] = new JLabel();
-			yLabels[i].setVisible(true);
-			yLabels[i].setHorizontalAlignment(SwingConstants.RIGHT);
-			yLabels[i].setVerticalAlignment(SwingConstants.BOTTOM);
-			yLabels[i].setOpaque(false);
-			drawerPanel.add(yLabels[i], Integer.valueOf(1));
-		}
-        
-        for(int i = 0; i < 7; i++) {
-            pointVisualizerLabels[i] = new JLabel();
-            pointVisualizerLabels[i].setOpaque(true);
-            pointVisualizerLabels[i].setVisible(false);
-            pointVisualizerLabels[i].setBackground(Color.black);
-            if(i != 6) {
-                drawerPanel.add(pointVisualizerLabels[i], Integer.valueOf(3));
-            } else {
-                drawerPanel.add(pointVisualizerLabels[i], Integer.valueOf(4));
-                pointVisualizerLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
-            }
-        }
-        pointVisualizerLabels[4].setBackground(Color.white);
-        pointVisualizerLabels[6].setBackground(Color.white);
-        
-	    System.out.println();	
-        System.out.println("Creating window...");
-		grid = new PixelGrid(functionCollection);
-		grid.setBounds(0, 0, 601, 601);
-		drawerPanel.add(grid, Integer.valueOf(1));
-		grid.setVisible(true);
-		
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.add(drawerPanel);
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-		frame.setResizable(false);
-		
 		setUpGraph();
 		for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
 			graph(functionIndex);
@@ -393,6 +321,83 @@ public class App extends JPanel {
 		userinput.close();
 	}
     
+    //create GUI window
+    public static void drawGUI() {
+        
+        minimumX = -10;
+		maximumX = 10;
+		minimumY = -10;
+		maximumY = 10;
+
+        xLines = new double[24];
+		yLines = new double[24];
+		xLinePositions = new int[24];
+		yLinePositions = new int[24];
+		xLines[23] = 0;
+		yLines[23] = 0;
+		
+		shiftX = 0.0;
+		shiftY = 0.0;
+		
+		prevX = null;
+		prevY = null;
+	    
+        pointVisualizerLabels = new JLabel[7];
+
+        isShowingPoint = false;
+
+        frame = new JFrame("Pixel Grid");
+		drawerPanel = new JLayeredPane();
+		drawerPanel.setPreferredSize(new Dimension(601, 601));
+		
+		xLabels = new JLabel[23];
+		yLabels = new JLabel[23];
+		for(int i = 0; i < 23; i++) {
+			xLabels[i] = new JLabel();
+			xLabels[i].setVisible(true);
+			xLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
+			xLabels[i].setVerticalAlignment(SwingConstants.CENTER);
+			xLabels[i].setOpaque(false);
+			drawerPanel.add(xLabels[i], Integer.valueOf(1));
+			yLabels[i] = new JLabel();
+			yLabels[i].setVisible(true);
+			yLabels[i].setHorizontalAlignment(SwingConstants.RIGHT);
+			yLabels[i].setVerticalAlignment(SwingConstants.BOTTOM);
+			yLabels[i].setOpaque(false);
+			drawerPanel.add(yLabels[i], Integer.valueOf(1));
+		}
+        
+        for(int i = 0; i < 7; i++) {
+            pointVisualizerLabels[i] = new JLabel();
+            pointVisualizerLabels[i].setOpaque(true);
+            pointVisualizerLabels[i].setVisible(false);
+            pointVisualizerLabels[i].setBackground(Color.black);
+            if(i != 6) {
+                drawerPanel.add(pointVisualizerLabels[i], Integer.valueOf(3));
+            } else {
+                drawerPanel.add(pointVisualizerLabels[i], Integer.valueOf(4));
+                pointVisualizerLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
+            }
+        }
+        pointVisualizerLabels[4].setBackground(Color.white);
+        pointVisualizerLabels[6].setBackground(Color.white);
+        
+	    System.out.println();	
+        System.out.println("Creating window...");
+		grid = new PixelGrid(functionCollection);
+		grid.setBounds(0, 0, 601, 601);
+		drawerPanel.add(grid, Integer.valueOf(1));
+		grid.setVisible(true);
+		
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.add(drawerPanel);
+		frame.pack();
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+		frame.setResizable(false);
+    }
+
+    //move the pointVisualizer (the circle and lable to show the coordinates of a point)
     public static void movePointVisualizer(boolean isVisible, int x, int y, int functionIndex) {
         for(int i = 0; i < 7; i++) {
              pointVisualizerLabels[i].setVisible(isVisible);
@@ -437,6 +442,7 @@ public class App extends JPanel {
         pointVisualizerLabels[4].setBounds(x - 1, y - 1, 3, 3);
     }
 
+    //creates and labels all axes lines
 	public static void createLabels() {
 		for(int i = 0; i < 23; i++) {
 			if(xLinePositions[i] > -1 && xLinePositions[i] < 601) {
@@ -476,11 +482,13 @@ public class App extends JPanel {
 		}
 	}
 	
+    //rounds a double, leaving a certain amount of decimal points
 	public static double round(double num, int amount) {
 		double scale = Math.pow(10.0, amount);
 		return Math.round(num * scale)/(scale);
 	}
 	
+    //formats the axes label text so it fits within the JLabel 
 	public static String formatNumber(double num) {
 		String rounded = num + "";
 		if(rounded.indexOf("E") != -1) {
@@ -509,6 +517,7 @@ public class App extends JPanel {
 		return rounded;
 	}
 	
+    //Fixes bugs associated with moving + pan, particularly where axes and labels are not in the right location initially
 	public static void fixGraph() {
 		double lineDiff = xLines[13] -xLines[12];
 		double maxX = xLines[22] - maximumX;
@@ -544,6 +553,7 @@ public class App extends JPanel {
 		}
 	}
 	
+    //creates the axes lines and puts them in the right location in the window
 	public static void createLines() {
 		double increment = (maximumY - minimumY)/600;
 		double firstX = minimumX - increment * 6;
@@ -579,6 +589,7 @@ public class App extends JPanel {
 		}
 	}
 	
+    //removes the axes lines that are not needed
 	public static void deleteLines() {
 		for(int i = 0; i < 23; i++) {
 			clearRectangle(xLinePositions[i], 0, 1, 601, Color.white);
@@ -602,6 +613,7 @@ public class App extends JPanel {
 		clearRectangle(0, 601 - yLinePositions[23], 601, 3, Color.white);
 	}
 	
+    //updates the axes line positions
 	public static void updateLines(int changeBoundaries) {
 		double increment = (maximumX - minimumX)/10;
 		double newMinX = minimumX - increment;
@@ -630,6 +642,7 @@ public class App extends JPanel {
 		}
 	}
 	
+    //draws a rectangle one level below the graph, meant for the axes lines 
 	public static void drawRectangle(int x, int y, int width, int height, Color color) {
 		for(int xinc = x; xinc < x + width; xinc++) {
 			for(int yinc = y; yinc < y + height; yinc++) {
@@ -640,6 +653,7 @@ public class App extends JPanel {
 		}
 	}
 	
+    //erases a rectangle one level below the graph, meant for the axes lines
 	public static void clearRectangle(int x, int y, int width, int height, Color color) {
 		for(int xinc = x; xinc < x + width; xinc++) {
 			for(int yinc = y; yinc < y + height; yinc++) {
@@ -650,6 +664,7 @@ public class App extends JPanel {
 		}
 	}
 	
+    //used to optimize panning up and down, adding a shift amount to all yValues.
 	public static void displaceYValues(int shiftAmount) {
 		double increment = (maximumY - minimumY)/600;
 		if(shiftAmount > 0) {
@@ -670,6 +685,7 @@ public class App extends JPanel {
 		}
 	}
 	
+    //used to optimize panning sideways, moving all points to the left or right instead of recalculating everything
 	public static void shiftYValues(int shiftAmount) {
 		double increment = (maximumX - minimumX)/600.0;
 		if(shiftAmount < 0) { //move function left
@@ -710,10 +726,12 @@ public class App extends JPanel {
 		}
 	}
 	
+    //check if a pixel's y coordinate is within a determined range of a function
 	public static boolean isWithinPoint(double yVal, double yPoint, double increment) {
 		return Math.abs(yPoint - yVal) <= increment;
 	}
 	
+    //sets up all variables to parse/graph all functions 
 	public static void setUpGraph() {
         grid.clearPixels();
         grid.clearPixels();
@@ -745,6 +763,7 @@ public class App extends JPanel {
 		}
 	}
 	
+    //changes the range variables depending on zooming in(+1) or zooming out(-1)
 	public static void zoom(double sign) {
 		double increment = sign * (maximumX - minimumX)/100;
 		//double increment = sign * 5;
@@ -755,10 +774,12 @@ public class App extends JPanel {
 		setUpGraph();
 	}
     
+    //returns the yValue for the pixel at a given yValue of a function 
     public static int getPoint(double increment, double yPosition, double yMin) {
         return (int)((yPosition - yMin)/increment);
     }
 
+    //sets up the point pairs, used for line drawing later when anti-aliasing. 
 	public static void graph(int functionIndex) {
 		double range = finalX.get(functionIndex) - initialX.get(functionIndex);
 		double increment = (range/600);
@@ -856,6 +877,7 @@ public class App extends JPanel {
         fillLines(range, increment, functionIndex, precision);
 	}
     
+    //draws the lines between points (contained within the point pairs) and antialiases these lines 
     public static void fillLines(double range, double increment, int functionIndex, double precision) {
         for(int i = 0; i < yPairs.get(functionIndex).size(); i++) {
             double x1 = xPairs.get(functionIndex).get(i)[0];
@@ -936,6 +958,8 @@ public class App extends JPanel {
             }
         }
     }
+
+    //Creates a pixel at the default level for the graph, used only for the function's pixels 
     public static void CreatePixel(int x, int y, int functionIndex, double intensity) {
         Color tempColor = functionColor[functionIndex % 7];
         int r = tempColor.getRed();
@@ -953,6 +977,7 @@ public class App extends JPanel {
         }
 	}
 	
+    //Parses the text-inputted function into an arrayList of operations and numbers, used later to compute values in the Function class 
 	public static ArrayList<Object> ParseFunction(String function, int functionIndex) {
 		ArrayList<Object> operation = new ArrayList<Object>();
 		String state = "ST";
