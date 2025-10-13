@@ -1,6 +1,7 @@
 package jonah;
 import java.util.ArrayList;
 
+//A class to handle all product operations
 public class Product extends Formula {
     
     private ArrayList<Object> function;
@@ -17,6 +18,7 @@ public class Product extends Formula {
         equation = new Function(function);
     }
 
+    //Loops through the product and multiplies the values, returning the final product 
     public double evaluate(){
         int lower = (int)(lowerBound);
         int higher = (int)(higherBound);

@@ -1,6 +1,7 @@
 package jonah;
 import java.util.ArrayList;
 
+//A class to handle all definite integral operations
 public class Integral extends Formula {
     
     private ArrayList<Object> function;
@@ -15,11 +16,13 @@ public class Integral extends Formula {
         equation = new Function(function);
     }
 
+    //Calls integrate to evaluate the integral 
     public double evaluate(){ 
         double originalValue = findIntegral(lowerBound, higherBound);
         return integrate(lowerBound, higherBound, originalValue, 1);
     }
     
+    //Uses a recursive call of findIntegral. Divides the region in two and goes deeper until the error is within a certain value or max depth 
     public double integrate(double lower, double higher, double originalValue, int depth) {
         double midpoint = (lower + higher)/2;
         double s1 = findIntegral(lower, midpoint);
@@ -34,6 +37,7 @@ public class Integral extends Formula {
         } 
     }
 
+    //Uses simpson's rule to approximate the integral within an interval
     private double findIntegral(double lower, double higher) {
         double deltaX = (higher - lower)/6;
         double midpoint = (higher + lower)/2;

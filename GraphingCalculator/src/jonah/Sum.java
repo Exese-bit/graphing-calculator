@@ -1,6 +1,7 @@
 package jonah;
 import java.util.ArrayList;
 
+//A class to handle all sum operations
 public class Sum extends Formula {
     
     private ArrayList<Object> function;
@@ -17,6 +18,7 @@ public class Sum extends Formula {
         equation = new Function(function);
     }
 
+    //Loops through the sum and adds each value, returning the final sum
     public double evaluate(){
         int lower = (int)(lowerBound);
         int higher = (int)(higherBound);

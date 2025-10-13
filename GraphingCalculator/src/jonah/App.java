@@ -112,8 +112,10 @@ public class App extends JPanel {
 		grid.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
                 if(!isShowingPoint) {
-                    if(e.getKeyChar() == 'i' | e.getKeyChar() == 'o') {
+                    if(e.getKeyChar() == 'i' | e.getKeyChar() == 'o') { //if zooming
                         double lineDiff = 0;
+                        
+                        //find the distance between visible axis lines
                         for(int i = 0; i < 23; i++) {
                             if(xLinePositions[i] != -1 && xLinePositions[i] != 601) {
                                 lineDiff = xLinePositions[i + 1] - xLinePositions[i];
@@ -127,7 +129,7 @@ public class App extends JPanel {
                                 graph(functionIndex);
                             }
                             createLines();
-                            if(lineDiff < 60) {
+                            if(lineDiff < 60) { //If axis lines are too close, update their spacing
                                 deleteLines();
                                 updateLines(1);
                                 createLines();
@@ -140,7 +142,7 @@ public class App extends JPanel {
                                 graph(functionIndex);
                             }
                             createLines();
-                            if(lineDiff > 100) {
+                            if(lineDiff > 100) { //If axis lines are too far apart, update their spacing
                                 deleteLines();
                                 updateLines(-1);
                                 createLines();
@@ -156,8 +158,8 @@ public class App extends JPanel {
 		});
 		grid.addMouseMotionListener(new MouseAdapter() {
 			public void mouseDragged(MouseEvent e) {
-                if(!isShowingPoint) {
-                    if(e.getX() - prevX != 0) {
+                if(!isShowingPoint) { //If panning
+                    if(e.getX() - prevX != 0) { //If panning sideways
                         int diff = e.getX() - prevX;
                         deleteLines();
                         shiftYValues(diff);
@@ -167,8 +169,8 @@ public class App extends JPanel {
                             graph(functionIndex);
                         }
                         createLines();
-                        double lineDiff = Math.abs(xLines[13] - xLines[12]);
-                        if(Math.abs(shiftX) > lineDiff) {
+                        double lineDiff = Math.abs(xLines[13] - xLines[12]); //Distance between x lines
+                        if(Math.abs(shiftX) > lineDiff) { //If the pan is too far sideways, update line positions
                             while(Math.abs(shiftX) > lineDiff) {
                                 deleteLines();
                                 if(shiftX > 0) {
@@ -187,7 +189,7 @@ public class App extends JPanel {
                             }
                         }
                     }
-                    if(e.getY() - prevY != 0) {
+                    if(e.getY() - prevY != 0) { //If panning up/down
                         int diff = e.getY() - prevY;
                         deleteLines();
                         displaceYValues(diff);
@@ -197,8 +199,8 @@ public class App extends JPanel {
                             graph(functionIndex);
                         }
                         createLines();
-                        double lineDiff = Math.abs(xLines[13] - xLines[12]);
-                        if(Math.abs(shiftY) > lineDiff) {
+                        double lineDiff = Math.abs(xLines[13] - xLines[12]); //Distance between y lines
+                        if(Math.abs(shiftY) > lineDiff) { //If panning too far up/down, update y line positions
                             while(Math.abs(shiftY) > lineDiff) {
                                 deleteLines();
                                 if(shiftY > 0) {
@@ -213,11 +215,11 @@ public class App extends JPanel {
                                     shiftY += lineDiff;
                                 }
                                 createLines();
-                            }
+                            } 
                         }
                     }
                     createLabels();
-                } else {
+                } else { //If showing the point associated with x value, move the point visualizer with the mouse drag
                     if(e.getX() > -1 && e.getX() < 601 && e.getY() > -1 && e.getY() < 601) {
                         int index = allXPoints.get(selectedFunction).indexOf(e.getX());
                         if(index != -1) {
@@ -232,6 +234,8 @@ public class App extends JPanel {
 				prevX = e.getX();
 				prevY = e.getY(); 
                 int touching = -1;
+
+                //Check if the mouse clicked on the graph
                 for(int i = 0; i < functionCollection.size(); i++) {
                     ArrayList<Integer> test = new ArrayList<Integer>();
                     test.add(e.getX() - 1);
@@ -247,13 +251,13 @@ public class App extends JPanel {
                         test.set(1, 603 - e.getY());
                     }
                 }
-                if(touching == -1) {
+                if(touching == -1) { //If mouse pressed outside of graph
                     prevX = e.getX();
 				    prevY = e.getY();
                     grid.setCursor(new Cursor(Cursor.HAND_CURSOR));
                     movePointVisualizer(false, 1, 1, 0);
                     isShowingPoint = false;
-                } else {
+                } else { //If mouse pressed on graph, show the point of the graph associated with mouse location
                     isShowingPoint = true;
                     selectedFunction = touching;
                     int index = allXPoints.get(touching).indexOf(prevX);
@@ -263,11 +267,11 @@ public class App extends JPanel {
                 }
 			}
 			public void mouseReleased(MouseEvent e) {
-                if(!isShowingPoint) {
+                if(!isShowingPoint) { //If the mouse was not pressed on the graph
 				    grid.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 				    prevX = null;
 				    prevY = null;
-                } else {
+                } else { //Hide the point visualizer, no longer showing point
                     movePointVisualizer(false, 1, 1, 0);
                     isShowingPoint = false;
                     selectedFunction = -1;
@@ -277,8 +281,10 @@ public class App extends JPanel {
 		
 		grid.addMouseWheelListener(new MouseAdapter() {
 			public void mouseWheelMoved(MouseWheelEvent e) {
-                if(!isShowingPoint) {
+                if(!isShowingPoint) { //If zooming and not showing point
                     double lineDiff = 0;
+
+                    //Finds distance between visible axis lines
                     for(int i = 0; i < 23; i++) {
                         if(xLinePositions[i] != -1 && xLinePositions[i] != 601) {
                             lineDiff = xLinePositions[i + 1] - xLinePositions[i];
@@ -292,7 +298,7 @@ public class App extends JPanel {
                             graph(functionIndex);
                         }
                         createLines();
-                        if(lineDiff < 60) {
+                        if(lineDiff < 60) { //If lines are too close, update positions
                             deleteLines();
                             updateLines(1);
                             createLines();
@@ -305,7 +311,7 @@ public class App extends JPanel {
                             graph(functionIndex);
                         }
                         createLines();
-                        if(lineDiff > 100) {
+                        if(lineDiff > 100) { //If lines are too far apart, update positions
                             deleteLines();
                             updateLines(-1);
                             createLines();
@@ -408,13 +414,16 @@ public class App extends JPanel {
         if(isVisible) {
             String xPrint = formatNumber(minimumX + increment * x);
             String yPrint = formatNumber(yValues.get(functionIndex)[x]);
+
+            //Prevent showing 1e-14 instead of 0
             if(Math.abs(Double.parseDouble(yPrint)) < 0.0000000001) {
                 yPrint = "0";
             }
             if(Math.abs(Double.parseDouble(xPrint)) < 0.0000000001) {
                 xPrint = "0";
             }
-
+            
+            //Format value for x and y coordinates so they fit within the label 
             if((xPrint).indexOf("E") != -1) {
                 double exponent = Double.parseDouble(xPrint.substring(xPrint.indexOf("E") + 1));
                 if(exponent > -3 && exponent < 4) {
@@ -434,7 +443,8 @@ public class App extends JPanel {
             pointVisualizerLabels[6].setText("(" + textPrint + ")");
             pointVisualizerLabels[5].setBounds(x - length - 1, y - 31, length * 2 + 2, 22);
         }
-
+        
+        //Move the labels to make the circle 
         pointVisualizerLabels[0].setBounds(x - 1, y - 2, 3, 1);
         pointVisualizerLabels[1].setBounds(x + 2, y - 1, 1, 3);
         pointVisualizerLabels[2].setBounds(x - 1, y + 2, 3, 1);
