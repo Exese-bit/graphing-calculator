@@ -7,9 +7,13 @@ public class Function {
 	public Function(ArrayList<Object> function) {
 		equation = function;
 	}
+
+    //Evaluates the expression at a given x (for regular functions) and n (for products and sums)
 	public double evaluate(double x, ArrayList<Object> formula, double n)  {
 		String tempval;
 		for(int i = 0; i < formula.size(); i++) {
+
+            //If the term is a constant/value 
 			if((formula.get(i) + "").equals("x")) {
 				formula.set(i, (x));
 			}
@@ -24,15 +28,18 @@ public class Function {
 			}
 			tempval = "" + formula.get(i);
 			char c = tempval.charAt(0);
-			if((c == 's' && (tempval.charAt(1) == 'i' | tempval.charAt(1) == 'e')) | c == 'c' | c == 't' | c == 'a' | (c == 'l' && tempval.charAt(1) == 'n')) { //if a function like sin(x), arccot(x), abs(x), ln(x)
+			if((c == 's' && (tempval.charAt(1) == 'i' | tempval.charAt(1) == 'e')) | c == 'c' | c == 't' | c == 'a' | (c == 'l' && tempval.charAt(1) == 'n')) { //if a function like sin(x), arccot(x), abs(x), ln(x). Only one inpit for the function 
 				double temporaryResult = Operations(tempval, 0, evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n));
 				formula.set(i, temporaryResult);
 				formula.remove(i + 1);
 			}
+            //If the term is another arrayList, recursively call evaluate for the expression within the arrayList 
 			if(tempval.length() > 1 && c == '[') {
 				double tempres = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i)), n);
 				formula.set(i, tempres);
 			}
+
+            //If the term is a more complex function/operation with multiple inputs
             if(tempval.equals("log") | tempval.equals("der") | tempval.equals("sum") | tempval.equals("pro") | tempval.equals("fac") | tempval.equals("int")) {
                 double xVal;
                 double base;
@@ -45,13 +52,13 @@ public class Function {
                         formula.set(i, Math.log(xVal)/Math.log(base));
                         formula.remove(i + 1);
                         break;
-                    case("der"):
+                    case("der"): //Derivatives 
                         xVal = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         Derivative tempdev = new Derivative(xVal, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)));
                         formula.set(i, tempdev.evaluate());
                         formula.remove(i + 1);
                         break;
-                    case("sum"):
+                    case("sum"): //Sums (Sigma notation)
                         xVal = x;
                         lowerBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         higherBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
@@ -60,7 +67,7 @@ public class Function {
                         formula.remove(i + 1);
                         formula.remove(i + 1);
                         break;
-                    case("pro"):
+                    case("pro"): //Products (Pi notation)
                         xVal = x;
                         lowerBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         higherBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
@@ -69,11 +76,11 @@ public class Function {
                         formula.remove(i + 1);
                         formula.remove(i + 1);
                         break;
-                    case("fac"):
+                    case("fac"): //Factorial
                         Factorial tempfac = new Factorial(new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), x);
                         formula.set(i, tempfac.evaluate());
                         break;
-                    case("int"):
+                    case("int"): //Integral 
                         lowerBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         higherBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
                         Integral tempintegral = new Integral(new ArrayList<Object>((ArrayList<Object>)formula.get(i + 3)), lowerBound, higherBound);
@@ -87,31 +94,44 @@ public class Function {
                 formula.remove(i + 1);
             }
 		}
+        //To handle negative numbers 
 		for(int i = 0; i < formula.size(); i++) {
 			tempval = "" + formula.get(i);
 			char c = tempval.charAt(0);
 			if(c == '-') {
 				try {
 					double isNumberTest = (double)formula.get(i);
-				} catch(ClassCastException e) {
-					boolean isNegative = false;
-					if(i == 0) {
+				} catch(ClassCastException e) { //If not a double 
+					boolean isNegative = false; 
+					if(i == 0) { //If first value is a minus sign, the next value must be negative 
 						isNegative = true;
 					} else {
-						try {
+						try { 
 							double isNumberTest = (double)formula.get(i - 1);
-						} catch (ClassCastException f) {
+						} catch (ClassCastException f) { //If value before is not a double, that means the negative sign is in front of a double 
 							isNegative = true;
 						}
 					}
-					if(isNegative && formula.size() > 1) {
+					if(isNegative && formula.size() > 1) { //Set double to negative and remove minus sign
 						formula.set(i, -(double)formula.get(i + 1));
 						formula.remove(i + 1);
 					}
 				}
 			}
 		}
-		int operationOrder = 0;
+
+        /*
+         *
+         * Represents the order of operations (PEMDAS), where:
+         *
+         * 0 = exponents
+         * 1 = divide/multiply
+         * 2 = add/subtract
+         *
+         */
+		int operationOrder = 0; 
+
+        //Uses operationOrder to determine value of final arrayList, which is now only composed of doubles and operations 
 		while(formula.size() > 1) {
 			for(int i = 1; i < formula.size(); i += 2) {
 				tempval = "" + formula.get(i);
@@ -130,7 +150,7 @@ public class Function {
 					tempresult = Operations(tempval, (double)formula.get(i - 1), (double)formula.get(i + 1));
 					changeArray = true;
 				}
-				if(changeArray) {
+				if(changeArray) { //If that operation has been completed, replace the two doubles and sign with one value 
 					formula.set(i - 1, tempresult);
 					formula.remove(i);
 					formula.remove(i);
@@ -142,10 +162,13 @@ public class Function {
 		return (double)formula.get(0);
 	}
 	
+    //Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX]
 	public double[] findYValues(double lowerX, double higherX) {
 		double[] YValues = new double[601];
 		double range = higherX - lowerX;
 		double xVal = lowerX;
+
+        //Calculate each yValue 
 		for(int x = 0; x <= 600; x += 1) {
 			YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
 			xVal += range/600;
@@ -153,6 +176,7 @@ public class Function {
 		return YValues;
 	}
 	
+    //Defines how to calculate the value of an operation and returns the value of that operation 
 	private double Operations(String operator, double result, double operand) {
 		double res = result;
 	    
@@ -220,7 +244,8 @@ public class Function {
 		
 		return res;
 	}
-
+    
+    //Returns an ArrayList representing a parsed version of the reflection formula for the gamma function (Used by Factorial class) 
     public static ArrayList<Object> getReflectionFormula(double equationValue) {
         ArrayList<Object> reflectionFormula = new ArrayList<Object>();
         reflectionFormula.add("pi");
@@ -242,6 +267,7 @@ public class Function {
         return reflectionFormula;
     }
 
+    //Returns an ArrayList representing a parsed version of the gamma function in its standard form (used by Factorial class)
     public static ArrayList<Object> getGammaIntegral(double nVal) {
         ArrayList<Object> returnArr = new ArrayList<Object>();
         returnArr.add("x");
