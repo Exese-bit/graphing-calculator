@@ -455,16 +455,16 @@ public class App extends JPanel {
     //creates and labels all axes lines
 	public static void createLabels() {
 		for(int i = 0; i < 23; i++) {
-			if(xLinePositions[i] > -1 && xLinePositions[i] < 601) {
+			if(xLinePositions[i] > -1 && xLinePositions[i] < 601) { //If x line is within the graph window
 				String labelText = formatNumber(xLines[i]);
 				xLabels[i].setText(labelText);
-				if(yLinePositions[23] > 600) {
+				if(yLinePositions[23] > 600) { //If the y axis is above the graph, put the x labels at a set location so they are visible 
 					xLabels[i].setBounds(xLinePositions[i] - 25, 4, 50, 20);
 					drawRectangle(xLinePositions[i] - 25, 4, 50, 20, new Color(240, 240, 240));
-				} else if(yLinePositions[23] < 37) {
+				} else if(yLinePositions[23] < 37) {//If the y axis is below the graph
 					xLabels[i].setBounds(xLinePositions[i] - 25, 575, 50, 20);
 					drawRectangle(xLinePositions[i] - 25, 575, 50, 20, new Color(240, 240, 240));
-				} else {
+				} else { //Put the x labels at the y axis 
 					xLabels[i].setBounds(xLinePositions[i] - 25, 611 - yLinePositions[23], 50, 20);
 					drawRectangle(xLinePositions[i] - 25, 611 - yLinePositions[23], 50, 20, new Color(240, 240, 240));
 				}
@@ -472,16 +472,16 @@ public class App extends JPanel {
 			} else {
 				xLabels[i].setVisible(false);
 			}
-			if(yLinePositions[i] > -1 && yLinePositions[i] < 601) {
+			if(yLinePositions[i] > -1 && yLinePositions[i] < 601) {//If y line is within the graph window 
 				String labelText = formatNumber(yLines[i]);
 				yLabels[i].setText(labelText);
-				if(xLinePositions[23] > 595) {
+				if(xLinePositions[23] > 595) { //If the x axis is too far right of the graph, put the y labels at a set location so they are visible 
 					yLabels[i].setBounds(545, 581 - yLinePositions[i], 50, 20);
 					drawRectangle(545, 581 - yLinePositions[i], 50, 20, new Color(240, 240, 240));
-				} else if(xLinePositions[23] < 50) {
+				} else if(xLinePositions[23] < 50) {//If the x axis is too far left of the graph
 					yLabels[i].setBounds(0, 581 - yLinePositions[i], 50, 20);
 					drawRectangle(0, 581 - yLinePositions[i], 50, 20, new Color(240, 240, 240));
-				} else {
+				} else {//Put the y labels at the x axis 
 					yLabels[i].setBounds(xLinePositions[23] - 53, 581 - yLinePositions[i], 50, 20);
 					drawRectangle(xLinePositions[23] - 53, 581 - yLinePositions[i], 50, 20, new Color(240, 240, 240));
 				}
@@ -501,15 +501,15 @@ public class App extends JPanel {
     //formats the axes label text so it fits within the JLabel 
 	public static String formatNumber(double num) {
 		String rounded = num + "";
-		if(rounded.indexOf("E") != -1) {
+		if(rounded.indexOf("E") != -1) { //If in scientific notation, round decimal component
 			double decimal = Double.parseDouble(rounded.substring(0, rounded.indexOf("E")));
 			String exponent = rounded.substring(rounded.indexOf("E") + 1);
 			return round(decimal, 4 - exponent.length()) + "E" + exponent;
 		}
-		if(rounded.substring(rounded.length() - 2).equals(".0")) {
+		if(rounded.substring(rounded.length() - 2).equals(".0")) { //If number has an empty fractional part, remove decimal point
 			rounded = rounded.substring(0, rounded.length() - 2);
 		} 
-		if(rounded.length() > 7) {
+		if(rounded.length() > 7) { //If number is too big for label, convert to scientific notation 
 			int exponent = 0;
 			if(Math.abs(num) > 1) {
 				while(Math.abs(num) > 10) {
@@ -535,12 +535,13 @@ public class App extends JPanel {
 		double maxY = yLines[22] - maximumY;
 		double minY = yLines[0] - minimumY;
 		
+        //Shift all lines so that they are actually in the right location 
 		while((maxX < 0 && minX < 0) | (maxX > 0 && minX > 0)) {
 			if(maxX < 0 && minX < 0) { //if maxX is negative and minX is negative, shift right
 				for(int i = 0; i < 23; i++) {
 					xLines[i] += lineDiff;
 				}
-			} else if(maxX > 0 && minX > 0) { //if maxX is positive and minX is positive, shit left
+			} else if(maxX > 0 && minX > 0) { //if maxX is positive and minX is positive, shift left
 				for(int i = 0; i < 23; i++) {
 					xLines[i] -= lineDiff;
 				}
@@ -573,6 +574,8 @@ public class App extends JPanel {
 			yLinePositions[i] = -1;
 			double xDiff = Math.abs(xLines[i] - firstX);
 			double yDiff = Math.abs(yLines[i] - firstY);
+
+            //Find the right pixel to represent the location of the line 
 			for(int index = 0;  index < 602; index++) {
 				double xVal = minimumX + increment * index;
 				double yVal = minimumY + increment * index;
@@ -587,10 +590,10 @@ public class App extends JPanel {
 					yLinePositions[i] = index;
 				}
 			}
-			if(i != 23) {
+			if(i != 23) { //If not axis, draw thin gray line
 				drawRectangle(xLinePositions[i], 0, 1, 601, Color.gray);
 				drawRectangle(0, 601 - yLinePositions[i], 601, 1, Color.gray);
-			} else {
+			} else { //Draw thick black line to represent axis 
 				if(yLinePositions[i] < 601) {
 					drawRectangle(0, 601 - yLinePositions[i], 601, 3, Color.black);
 				}
@@ -602,13 +605,16 @@ public class App extends JPanel {
     //removes the axes lines that are not needed
 	public static void deleteLines() {
 		for(int i = 0; i < 23; i++) {
+            //Delete the lines 
 			clearRectangle(xLinePositions[i], 0, 1, 601, Color.white);
 			clearRectangle(0, 601 - yLinePositions[i], 601, 1, Color.white);
+
+            //Delete the boxes for the labels
 			if(yLinePositions[23] > 600) {
 				clearRectangle(xLinePositions[i] - 25, 4, 50, 20, new Color(240, 240, 240));
 			} else if(yLinePositions[23] < 37) {
 				clearRectangle(xLinePositions[i] - 25, 575, 50, 20, new Color(240, 240, 240));
-			} else {
+			} else { 
 				clearRectangle(xLinePositions[i] - 25, 611 - yLinePositions[23], 50, 20, new Color(240, 240, 240));
 			}
 			if(xLinePositions[23] > 595) {
@@ -619,29 +625,30 @@ public class App extends JPanel {
 				clearRectangle(xLinePositions[23] - 53, 581 - yLinePositions[i], 50, 20, new Color(240, 240, 240));
 			}
 		}
+        //Delete the axis lines 
 		clearRectangle(xLinePositions[23] - 1, 0, 3, 601, Color.white);
 		clearRectangle(0, 601 - yLinePositions[23], 601, 3, Color.white);
 	}
 	
-    //updates the axes line positions
+    //updates the line positions when needed 
 	public static void updateLines(int changeBoundaries) {
 		double increment = (maximumX - minimumX)/10;
 		double newMinX = minimumX - increment;
 		double newMinY = minimumY - increment;
-		if(changeBoundaries == 0) {
+		if(changeBoundaries == 0) { //If simply panning
 			for(int i = 0; i < 23; i++) {
 				xLines[i] = newMinX + increment * i;
 				yLines[i] = newMinY + increment * i;
 			}
 		} else {
-			if(changeBoundaries == 1) {
+			if(changeBoundaries == 1) { //If zooming out 
 				for(int i = 0; i < 23; i++) {
 					xLines[i] *= 2;
 					yLines[i] *= 2;
 				}
 				shiftX *= 2;
 				shiftY *= 2;
-			} else {
+			} else { //If zooming in 
 				for(int i = 0; i < 23; i++) {
 					xLines[i] /= 2;
 					yLines[i] /= 2;
@@ -674,9 +681,10 @@ public class App extends JPanel {
 		}
 	}
 	
-    //used to optimize panning up and down, adding a shift amount to all yValues.
+    //used to set up panning up and down, adding a shift amount to range.
 	public static void displaceYValues(int shiftAmount) {
 		double increment = (maximumY - minimumY)/600;
+        //Shift y range by the shift amount 
 		if(shiftAmount > 0) {
 			while(shiftAmount > 0) {
 				shiftY += -increment;
@@ -707,6 +715,7 @@ public class App extends JPanel {
 						yValues.get(functionIndex)[i - 1] = yValues.get(functionIndex)[i];
 					}
 					parseIndex.add(0);
+                    //Evaluate the edge value 
 					ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
 					Function tempfunction = new Function(formula);
 					yValues.get(functionIndex)[yValues.get(functionIndex).length - 1] = tempfunction.evaluate(maximumX + increment, new ArrayList<Object>(formula), 0);
@@ -725,6 +734,7 @@ public class App extends JPanel {
 						yValues.get(functionIndex)[i] = yValues.get(functionIndex)[i - 1];
 					}
 					parseIndex.add(0);
+                    //Evaluate the edge value 
 					ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
 					Function tempfunction = new Function(formula);
 					yValues.get(functionIndex)[0] = tempfunction.evaluate(minimumX - increment, new ArrayList<Object>(formula), 0);
@@ -767,7 +777,9 @@ public class App extends JPanel {
 			yPointPositions.add(new int[601]);
 			ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
 			Function input = new Function(formula);
+            //Calculate all y values for the function's range 
 			yValues.add(input.findYValues(minimumX, maximumX));
+
 			initialX.add(minimumX);
 			finalX.add(maximumX);
 		}
@@ -776,7 +788,6 @@ public class App extends JPanel {
     //changes the range variables depending on zooming in(+1) or zooming out(-1)
 	public static void zoom(double sign) {
 		double increment = sign * (maximumX - minimumX)/100;
-		//double increment = sign * 5;
 		minimumX += increment;
 		maximumX -= increment;
 		minimumY += increment;
@@ -804,9 +815,10 @@ public class App extends JPanel {
 			yValuePositions.get(functionIndex)[x] = "OUTSIDE";
 			yPointPositions.get(functionIndex)[x] = 0;
             double yPosition = yValues.get(functionIndex)[x];
-			if(yPosition <= outOfBoundsHigh && yPosition >= outOfBoundsLow) {
+
+			if(yPosition <= outOfBoundsHigh && yPosition >= outOfBoundsLow) { //If y is within Graph GUI 
                 int yPoint = getPoint(increment, yPosition, initialY);
-                if(yPairs.get(functionIndex).size() == 0) {
+                if(yPairs.get(functionIndex).size() == 0) { 
                     yPairs.get(functionIndex).add(new Integer[2]);
                     yPairs.get(functionIndex).get(0)[0] = yPoint;
                     xPairs.get(functionIndex).add(new Integer[2]);
@@ -817,7 +829,7 @@ public class App extends JPanel {
                 } else {
                     Integer[] tempArr = yPairs.get(functionIndex).get(pointer);
                     if(tempArr[0] != null) {
-                        if(tempArr[0] != yPoint) {
+                        if(tempArr[0] != yPoint) { //Only add point if it is defined and is not over another point  
                             yPairs.get(functionIndex).get(pointer)[1] = yPoint;
                             xPairs.get(functionIndex).get(pointer)[1] = x;
                             yPairs.get(functionIndex).add(new Integer[2]);
@@ -829,7 +841,7 @@ public class App extends JPanel {
                 }
 				yValuePositions.get(functionIndex)[x] = "INSIDE";
                 yPointPositions.get(functionIndex)[x] = yPoint;
-			} else if(!(yPosition + "").equals("NaN") && ((int)yPosition != Integer.MAX_VALUE && (int)yPosition != Integer.MIN_VALUE)) {
+			} else if(!(yPosition + "").equals("NaN") && ((int)yPosition != Integer.MAX_VALUE && (int)yPosition != Integer.MIN_VALUE)) { //If outside of bounds but still defined 
                 int yPoint = getPoint(increment, yPosition, initialY);
                 if(yPairs.get(functionIndex).size() == 0) {
                     yPairs.get(functionIndex).add(new Integer[2]);
@@ -839,30 +851,30 @@ public class App extends JPanel {
                 } else {
                     Integer[] tempArr = yPairs.get(functionIndex).get(pointer);
                     if(tempArr[0] != null) {
-                        if(tempArr[0] < 601 && tempArr[0] > -1) {
+                        if(tempArr[0] < 601 && tempArr[0] > -1) { //If first point is within bounds, create point pair
                             yPairs.get(functionIndex).get(pointer)[1] = yPoint;
                             xPairs.get(functionIndex).get(pointer)[1] = x;
                             yPairs.get(functionIndex).add(new Integer[2]);
                             xPairs.get(functionIndex).add(new Integer[2]);
                             yPairs.get(functionIndex).get(pointer + 1)[0] = yPoint;
                             xPairs.get(functionIndex).get(pointer + 1)[0] = x;
-                        } else if((tempArr[0] < 0 && yPoint < 0) | (tempArr[0] > 600 && yPoint > 600) | Math.abs(tempArr[0] - yPoint) > 610) {
+                        } else if((tempArr[0] < 0 && yPoint < 0) | (tempArr[0] > 600 && yPoint > 600) | Math.abs(tempArr[0] - yPoint) > 610) { //If distance between points is too great or both are outside of bounds, don't add to point pair 
                             yPairs.get(functionIndex).get(pointer)[0] = yPoint;
                             xPairs.get(functionIndex).get(pointer)[0] = x;
                         } 
-                    } else {
+                    } else { 
                         yPairs.get(functionIndex).get(pointer)[0] = yPoint;
                         xPairs.get(functionIndex).get(pointer)[0] = x;
                     }
                 }
-            } else if((yPosition + "").equals("NaN") | ((int)yPosition == Integer.MAX_VALUE | (int)yPosition == Integer.MIN_VALUE)) {
+            } else if((yPosition + "").equals("NaN") | ((int)yPosition == Integer.MAX_VALUE | (int)yPosition == Integer.MIN_VALUE)) { //If point is undefined
                 if(yPairs.get(functionIndex).size() != 0 && x != 0) {
                     if(yPairs.get(functionIndex).get(pointer)[0] != null) {
                         double yPrevious = yValues.get(functionIndex)[x - 1];
-                        if(xPairs.get(functionIndex).get(pointer)[0] == x - 1) {
+                        if(xPairs.get(functionIndex).get(pointer)[0] == x - 1) { //Remove last point from point pair 
                             yPairs.get(functionIndex).remove(pointer);
                             xPairs.get(functionIndex).remove(pointer);
-                        } else {
+                        } else { 
                             yPairs.get(functionIndex).get(pointer)[1] = getPoint(increment, yPrevious, initialY);
                             xPairs.get(functionIndex).get(pointer)[1] = x - 1;
                         }
@@ -872,39 +884,52 @@ public class App extends JPanel {
                 }
             }
 		}
-        if(yPairs.get(functionIndex).size() > 0 && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[1] == null && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0] != null) {
-            if(yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0] < 601 && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0] > -1) {
+        //Handle edge cases where the last or first point pairs are incomplete  
+        if(yPairs.get(functionIndex).size() > 0 && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[1] == null && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0] != null) { //If the last point is null but the first point in the pair is defined 
+            if(yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0] < 601 && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0] > -1) { //If the first point is within the graph GUI, set the last point in the pair equal to the first's y value. 
                 yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[1] = yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0];
                 xPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[1] = 599;
-            } else {
+            } else { //If not within the graph GUI, remove last pair 
                 yPairs.get(functionIndex).remove(yPairs.get(functionIndex).size() - 1);
                 xPairs.get(functionIndex).remove(xPairs.get(functionIndex).size() - 1);
             }
-        } else if(yPairs.get(functionIndex).size() > 0 && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[1] == null && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0] == null) {
+        } else if(yPairs.get(functionIndex).size() > 0 && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[1] == null && yPairs.get(functionIndex).get(yPairs.get(functionIndex).size() - 1)[0] == null) { //If the last pair is completely empty, just remove it 
             yPairs.get(functionIndex).remove(yPairs.get(functionIndex).size() - 1);
             xPairs.get(functionIndex).remove(xPairs.get(functionIndex).size() - 1);
         }
+
+        //Create the lines between the point pairs 
         fillLines(range, increment, functionIndex, precision);
 	}
     
     //draws the lines between points (contained within the point pairs) and antialiases these lines 
     public static void fillLines(double range, double increment, int functionIndex, double precision) {
         for(int i = 0; i < yPairs.get(functionIndex).size(); i++) {
+
+            //Coordinates for end points of line 
             double x1 = xPairs.get(functionIndex).get(i)[0];
             double x2 = xPairs.get(functionIndex).get(i)[1];
             double y1 = yPairs.get(functionIndex).get(i)[0];
             double y2 = yPairs.get(functionIndex).get(i)[1];
             
+            //Plot end points 
             CreatePixel((int)x1, (int)y1, functionIndex, 1);
             CreatePixel((int)x2, (int)y2, functionIndex, 1);
+
+            //Slope of line between end points 
             double middleSlope = (y2 - y1)/(x2 - x1);
             if(middleSlope < 1 && middleSlope > -1) {
                 CreatePixel((int)x1, (int)y1 - 1, functionIndex, 1);
                 for(int x = (int)x1; x <= (int)x2; x++) {
                     double point = middleSlope * (x - x1) + y1;
+
+                    //Antialiasing, Wu's line algorithm where opacity is proportional to distance from line 
                     CreatePixel(x, (int)point + 1, functionIndex, Math.abs(1 - (((int)point + 1) - point)));
+
+                    //Draw opaque pixel between top and bottom anti-aliased lines (used to increase thickness)
                     CreatePixel(x, (int)point, functionIndex, 1);
-                    if(x != (int)x2) {
+
+                    if(x != (int)x2) { //Add to all* arrays, used later for point visualization 
                         allXPoints.get(functionIndex).add(x);
                         allYPoints.get(functionIndex).add((int)point);
                         ArrayList<Integer> coordinate = new ArrayList<Integer>();
@@ -913,15 +938,19 @@ public class App extends JPanel {
                         allCoordinates.get(functionIndex).add(coordinate);
                     }
                     point--;
+
+                    //Antialiasing, Wu's line algorithm
                     CreatePixel(x, (int)point, functionIndex, Math.abs(1 - ((point - (int)point))));
                 }
-            } else if(Math.abs(middleSlope) == 1) {
+            } else if(Math.abs(middleSlope) == 1) { //Edge case that needs to be handled seperately, manual antialiasing 
                 allXPoints.get(functionIndex).add((int)x1);
                 allYPoints.get(functionIndex).add((int)y1);
                 ArrayList<Integer> coordinate = new ArrayList<Integer>();
                 coordinate.add((int)x1);
                 coordinate.add((int)y1);
                 allCoordinates.get(functionIndex).add(coordinate);
+
+                //Manual antialiasing
                 CreatePixel((int)x1, (int)y1 + 1, functionIndex, 0.5);
                 CreatePixel((int)x1, (int)y1 - 1, functionIndex, 0.5);
                 CreatePixel((int)x2, (int)y2 + 1, functionIndex, 0.5);
@@ -929,13 +958,16 @@ public class App extends JPanel {
             } else {
                 CreatePixel((int)x1 + 1, (int)y1, functionIndex, 1);
                 middleSlope = 1/middleSlope;
-                int counter = 0;
+                int counter = 0; 
                 if(middleSlope > 0) {
                     for(int y = Math.max((int)y1, 0); y <= Math.min(601, (int)y2); y++) {
                         double point = x1 + middleSlope * counter;
+                        //Antialiasing, Wu's line algorithm
                         CreatePixel((int)point + 1, y, functionIndex, Math.abs(1 - (((int)point + 1) - point)));
+
+                        //Draw opaque pixel between antialiased lines, used to increase thickness 
                         CreatePixel((int)point, y, functionIndex, 1);
-                        if(y != Math.min(601, (int)y2)) {
+                        if(y != Math.min(601, (int)y2)) { //Add to all* arrays, used later for point visualization 
                             allXPoints.get(functionIndex).add((int)point);
                             allYPoints.get(functionIndex).add(y);
                             ArrayList<Integer> coordinate = new ArrayList<Integer>();
@@ -944,13 +976,19 @@ public class App extends JPanel {
                             allCoordinates.get(functionIndex).add(coordinate);
                         }
                         point--;
+                        
+                        //Antialiasing, Wu's line algorithm 
                         CreatePixel((int)point, y, functionIndex, Math.abs(1 - ((point - (int)point))));
+
                         counter++;
                     }
                 } else {
                     for(int y = Math.max((int)y2, 0); y <= Math.min((int)y1, 601); y++) {
                         double point = x2 + middleSlope * counter;
+                        //Antialiasing, Wu's line algorithm
                         CreatePixel((int)point + 1, y, functionIndex, Math.abs(1 - (((int)point + 1) - point)));
+
+                        //Draw opaque pixel 
                         CreatePixel((int)point, y, functionIndex, 1);
                         if(y != Math.max((int)y2, 0)) {
                             allXPoints.get(functionIndex).add((int)point);
@@ -961,7 +999,10 @@ public class App extends JPanel {
                             allCoordinates.get(functionIndex).add(coordinate);
                         }
                         point--;
+
+                        //Antialiasing, Wu's line algorithm 
                         CreatePixel((int)point, y, functionIndex, Math.abs(1 - ((point - (int)point))));
+
                         counter++;
                     }
                 }
@@ -978,7 +1019,8 @@ public class App extends JPanel {
         if(intensity == 1) {
 		    grid.setPoint(x, 601 - y, tempColor, true, functionIndex);
         } else {
-            if(intensity > 1) {
+            //Prevent opacity outside of bounds of 0 and 1 
+            if(intensity > 1) { 
                 intensity = 1;
             } else if(intensity < 0) {
                 intensity = 0;
@@ -987,7 +1029,18 @@ public class App extends JPanel {
         }
 	}
 	
-    //Parses the text-inputted function into an arrayList of operations and numbers, used later to compute values in the Function class 
+    /* 
+     * Parses the text-inputted function into an arrayList of operations and numbers, used later to compute values in the Function class 
+     * 
+     * Can only parse in standard format, i.e. 2 + 2 or 2 * sin(x). That is, the number is followed by an operation and then another number.
+     *
+     * Uses a state machine to parse, where: 
+     *  ST = At first character, has no previous state 
+     *  NUM = Creating an Integer
+     *  DEC = Adding a decimal part to the integer 
+     *  IDLE = Done with creating the number (Default state, used when parsing operations)
+     *
+     */
 	public static ArrayList<Object> ParseFunction(String function, int functionIndex) {
 		ArrayList<Object> operation = new ArrayList<Object>();
 		String state = "ST";
@@ -998,28 +1051,28 @@ public class App extends JPanel {
 		
 		while(pointer < function.length()) {
 			char tempval = function.charAt(pointer);
-			if (tempval == '+' | tempval == '-' | tempval == '*' | tempval == '/' | tempval == '^') {
-				if(state.equals("DEC")) {
+			if (tempval == '+' | tempval == '-' | tempval == '*' | tempval == '/' | tempval == '^') { //If the character is a basic operation
+				if(state.equals("DEC")) { //Add decimal component to number 
 					num += dec/(Math.pow(10, decimalcounter));
 					state = "NUM";
 					decimalcounter = 0;
 					dec = 0;
 				}
-				if(state.equals("NUM")) {
+				if(state.equals("NUM")) { //Add number to array list 
 					operation.add(num);
 					num = 0;
 				}  
-				operation.add("" + tempval);
+				operation.add("" + tempval); //Once done with previous number, add operation 
 				state = "IDLE";
 			}
-			if(tempval == '.') {
+			if(tempval == '.') { //Enter decimal state if there is a decimal point after the number
 				state = "DEC";
 			}
-			if(tempval == 's' | tempval == 'c' | tempval == 't' | tempval == 'a' | tempval == 'd' | (tempval == 'p' && function.charAt(pointer + 1) == 'r') | tempval == 'f' | tempval == 'i') { //All functions
-				if(tempval != 'a' | function.charAt(pointer + 1) == 'b') {  //For all functions except arcsin,...,arccot
+			if(tempval == 's' | tempval == 'c' | tempval == 't' | tempval == 'a' | tempval == 'd' | (tempval == 'p' && function.charAt(pointer + 1) == 'r') | tempval == 'f' | tempval == 'i') { //All functions like sin, tan, der, int, pro
+				if(tempval != 'a' | function.charAt(pointer + 1) == 'b') {  //For all functions except arcsin,...,arccot. Includes abs as an edge case
 					operation.add("" + tempval + function.charAt(pointer + 1) + function.charAt(pointer + 2));
 					pointer += 2;
-                } else {
+                } else { //If function has a length of six, such as arcsin, arctan, arcsec, etc.
 					String tempadder = "";
 					for(int i = 1; i < 6; i++) {
 						tempadder += function.charAt(pointer + i);
@@ -1029,17 +1082,17 @@ public class App extends JPanel {
 				}
 				state = "IDLE";
 			}
-            if(tempval == 'l') {
-                if(function.charAt(pointer + 1) == 'n') {
+            if(tempval == 'l') { //If ln or log
+                if(function.charAt(pointer + 1) == 'n') { //If ln
                     operation.add("" + tempval + function.charAt(pointer + 1));
                     pointer++;
-                } else {
+                } else { //If log
                     operation.add("" + tempval + function.charAt(pointer + 1) + function.charAt(pointer + 2));
                     pointer += 2;
                 }
                 state = "IDLE";
             }
-			if (tempval == ')') {
+			if (tempval == ')') { //If at end of expression, add remaining number if it exists to the ArrayList
 				if(state.equals("DEC")) {
 					num += dec/(Math.pow(10, decimalcounter));
 					state = "NUM";
@@ -1050,15 +1103,17 @@ public class App extends JPanel {
 					operation.add(num);
 					num = 0;
 				}
+                //Move pointer beyond the ) to prevent an infinite loop
 				parseIndex.set(functionIndex, parseIndex.get(functionIndex) + pointer);
 				return operation;
 			}
-			if (tempval == '(') {
+			if (tempval == '(') { //Parse the expression within the parentheses and add result to ArrayList
 				operation.add(ParseFunction(function.substring(pointer), functionIndex));
+                //Move pointer beyond the last ) so that it moves to the next expression
 				pointer += parseIndex.get(functionIndex);
 				parseIndex.set(functionIndex, 0);
 			}
-			if (tempval > 47 && tempval < 58) {
+			if (tempval > 47 && tempval < 58) { //Only add to number/decimal if the character is a number
 				if(state.equals("DEC")) {
 					dec = dec * 10 + Double.parseDouble("" + tempval);
 					decimalcounter++;
@@ -1067,11 +1122,11 @@ public class App extends JPanel {
 					state = "NUM";
 				}
 			}
-			if (tempval == 'x' | tempval == 'e' | tempval == 'n') {
+			if (tempval == 'x' | tempval == 'e' | tempval == 'n') { //If variable/constant with length 1
 				operation.add(tempval);
 				state = "IDLE";
 			}
-			if (tempval == 'p' && function.charAt(pointer + 1) == 'i') {
+			if (tempval == 'p' && function.charAt(pointer + 1) == 'i') { //If constant with length 2
 				operation.add("" + tempval + function.charAt(pointer + 1));
 				pointer++;
 				state = "IDLE";
