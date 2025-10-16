@@ -19,7 +19,8 @@ An interactive graphing calculator built in Java that combines console-based fun
  **Usage**
  - Run the program with an IDE or from the command line.
  - Enter your function in the console, e.g:
-    5+x+sin(tan(x))       This will output the following: <img width="1200" height="1200" alt="20250910_11h58m00s_grim" src="https://github.com/user-attachments/assets/c8cd4f5c-ec2f-46ee-b2ee-cf9c8c8b9cf2" />
+    5+x+sin(tan(x))       This will output the following: <img width="1194" height="1196" alt="20251014_18h43m12s_grim" src="https://github.com/user-attachments/assets/35c33a21-6d53-4f83-8cb9-9a99b5199278" />
+
 
 - Type "graph" into the console to confirm all functions, opening the interactive GUI.
 - Use your mouse to move the graph around with left click and pan. 
