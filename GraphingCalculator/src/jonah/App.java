@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.FlowLayout;
+import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -67,6 +69,13 @@ public class App extends JPanel {
 	private static JLabel[] xLabels;
 	private static JLabel[] yLabels;
     private static JLabel[] pointVisualizerLabels;
+
+    //variables for outside of graph GUI 
+    private static JScrollPane scrollPane;
+    private static JPanel listPanel;
+    private static ArrayList<JPanel> rowPanels;
+    private static ArrayList<JButton> rowButtons;
+    
     
 	public static void main(String[] args) {
 
@@ -353,8 +362,9 @@ public class App extends JPanel {
         isShowingPoint = false;
 
         frame = new JFrame("Pixel Grid");
+        frame.setSize(901, 601);
 		drawerPanel = new JLayeredPane();
-		drawerPanel.setPreferredSize(new Dimension(601, 601));
+		drawerPanel.setPreferredSize(new Dimension(901, 601));
 		
 		xLabels = new JLabel[23];
 		yLabels = new JLabel[23];
@@ -401,6 +411,74 @@ public class App extends JPanel {
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		frame.setResizable(false);
+
+        rowPanels = new ArrayList<JPanel>();
+        rowButtons = new ArrayList<JButton>();
+
+        listPanel = new JPanel();
+        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+        scrollPane = new JScrollPane(listPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPane.setBounds(600, 0, 300, 601);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
+        verticalBar.setPreferredSize(new Dimension(10, Integer.MAX_VALUE));
+        verticalBar.setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
+            @Override
+            protected void configureScrollBarColors() {
+                this.thumbColor = Color.GRAY;      // the draggable part
+                this.trackColor = Color.LIGHT_GRAY; // background track
+            }
+
+            @Override
+            protected JButton createIncreaseButton(int orientation) {
+                return createZeroButton(); // remove bottom/right button
+            }
+            
+            @Override
+            protected JButton createDecreaseButton(int orientation) {
+                return createZeroButton(); // remove top/left button
+            }
+
+            private JButton createZeroButton() {
+                JButton button = new JButton();
+                button.setPreferredSize(new Dimension(0, 0)); // no size
+                button.setMinimumSize(new Dimension(0, 0));
+                button.setMaximumSize(new Dimension(0, 0));
+                return button;
+            }
+        });
+        drawerPanel.add(scrollPane, Integer.valueOf(1));
+
+        addRow(0); 
+    }
+    
+    public static void addRow(int index) {
+        Dimension rowSize = new Dimension(285, 61);
+
+        JPanel rowPanel = new JPanel(new BorderLayout());
+        rowPanel.setPreferredSize(rowSize);
+        rowPanel.setMinimumSize(rowSize);
+        rowPanel.setMaximumSize(rowSize);
+        rowPanels.add(rowPanel);
+        
+        JLabel separator = new JLabel();
+        separator.setOpaque(true);              
+        separator.setBackground(Color.GRAY);    
+        separator.setPreferredSize(new Dimension(285, 1)); 
+        rowPanel.add(separator, BorderLayout.SOUTH);
+
+        JButton selectFunction = new JButton("");
+        rowButtons.add(selectFunction);
+        selectFunction.setBorder(BorderFactory.createEmptyBorder());
+        selectFunction.setBackground(Color.LIGHT_GRAY);
+        selectFunction.setPreferredSize(new Dimension(20, 60));
+        selectFunction.addActionListener(e -> {
+            System.out.println(index);
+        });
+        rowPanel.add(selectFunction, BorderLayout.WEST);
+
+        listPanel.add(rowPanel);
     }
 
     //move the pointVisualizer (the circle and lable to show the coordinates of a point)
