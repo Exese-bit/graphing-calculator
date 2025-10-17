@@ -824,7 +824,7 @@ public class App extends JPanel {
 				shiftX += -increment;
 				parseIndex.clear();
 				for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                    if(!functionCollection.get(functionIndex).equals("")) {
+                    if(!functionCollection.get(functionIndex).equals("")) { //Only shift values if the function is not empty (causes exception if included)
                         for(int i = 1; i < yValues.get(0).length; i++) {
                             yValues.get(functionIndex)[i - 1] = yValues.get(functionIndex)[i];
                         }
@@ -834,7 +834,7 @@ public class App extends JPanel {
                         Function tempfunction = new Function(formula);
                         yValues.get(functionIndex)[yValues.get(functionIndex).length - 1] = tempfunction.evaluate(maximumX + increment, new ArrayList<Object>(formula), 0);
                     } else {
-                        parseIndex.add(0);
+                        parseIndex.add(0); //Fixes bug where empty functions would throw an exception if the graph was panned because the parseIndex size did not match functionCollection size
                     }
 				}
 				minimumX += increment;
@@ -847,7 +847,7 @@ public class App extends JPanel {
 				shiftX += increment;
 				parseIndex.clear();
 				for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                    if(!functionCollection.get(functionIndex).equals("")) {
+                    if(!functionCollection.get(functionIndex).equals("")) { //Only shift values if the function is not empty (causes exception if included)
                         for(int i = yValues.get(0).length - 1; i > 0; i--) {
                             yValues.get(functionIndex)[i] = yValues.get(functionIndex)[i - 1];
                         }
@@ -857,7 +857,7 @@ public class App extends JPanel {
                         Function tempfunction = new Function(formula);
                         yValues.get(functionIndex)[0] = tempfunction.evaluate(minimumX - increment, new ArrayList<Object>(formula), 0);
                     } else {
-                        parseIndex.add(0);
+                        parseIndex.add(0); //Fixes bug where empty functions would throw an exception if the graph was panned because the parseIndex size did not match functionCollection size
                     }
 				}
 				minimumX -= increment;
