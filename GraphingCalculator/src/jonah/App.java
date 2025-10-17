@@ -491,8 +491,12 @@ public class App extends JPanel {
         textField.addActionListener(e -> {
             
             String input = textField.getText();
-            input = input.substring(input.indexOf("=") + 1);
-			String func = "(" + input + ")";
+            String func = "(" + input + ")";
+            if(!input.equals("")) {
+                input = input.substring(input.indexOf("=") + 1);
+            } else {
+                func = "";
+            }
 			functionCollection.set(index, func);
             
             deleteLines();
