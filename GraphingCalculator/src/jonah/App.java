@@ -818,7 +818,6 @@ public class App extends JPanel {
 	
     //used to optimize panning sideways, moving all points to the left or right instead of recalculating everything
 	public static void shiftYValues(int shiftAmount) {
-        System.out.println(functionCollection);
 		double increment = (maximumX - minimumX)/600.0;
 		if(shiftAmount < 0) { //move function left
 			while(shiftAmount < 0) {
@@ -834,7 +833,9 @@ public class App extends JPanel {
                         ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
                         Function tempfunction = new Function(formula);
                         yValues.get(functionIndex)[yValues.get(functionIndex).length - 1] = tempfunction.evaluate(maximumX + increment, new ArrayList<Object>(formula), 0);
-                    } 
+                    } else {
+                        parseIndex.add(0);
+                    }
 				}
 				minimumX += increment;
 				maximumX += increment;
@@ -855,6 +856,8 @@ public class App extends JPanel {
                         ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
                         Function tempfunction = new Function(formula);
                         yValues.get(functionIndex)[0] = tempfunction.evaluate(minimumX - increment, new ArrayList<Object>(formula), 0);
+                    } else {
+                        parseIndex.add(0);
                     }
 				}
 				minimumX -= increment;
@@ -1165,7 +1168,6 @@ public class App extends JPanel {
 		double num = 0;
 		double dec = 0;
 		int decimalcounter = 0;
-	    System.out.println(function);	
 		while(pointer < function.length()) {
 			char tempval = function.charAt(pointer);
 			if (tempval == '+' | tempval == '-' | tempval == '*' | tempval == '/' | tempval == '^') { //If the character is a basic operation
