@@ -75,6 +75,7 @@ public class App extends JPanel {
     private static JPanel listPanel;
     private static ArrayList<JPanel> rowPanels;
     private static ArrayList<JButton> rowButtons;
+    private static ArrayList<JTextField> textFields;
     
     
 	public static void main(String[] args) {
@@ -92,6 +93,7 @@ public class App extends JPanel {
 		functionCollection = new ArrayList<String>();
 		boolean startGraph = false;
 	    
+        /*
 		while(!startGraph) {
 			System.out.println();
 			System.out.println("Input your next Function below: (Type \"GRAPH\" to confirm all functions)");
@@ -103,9 +105,9 @@ public class App extends JPanel {
 				functionCollection.add(func);
 			}
 		}
-        
+        */
+        functionCollection.add("");
         drawGUI();
-
 		setUpGraph();
 		for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
 			graph(functionIndex);
@@ -115,7 +117,7 @@ public class App extends JPanel {
 		createLabels();
 		
 		drawerPanel.setVisible(true);
-        System.out.println("Done!");
+        System.out.println("Done!\n");
         movePointVisualizer(false, 10, 10, 0);
 
 		grid.addKeyListener(new KeyAdapter() {
@@ -399,7 +401,7 @@ public class App extends JPanel {
         pointVisualizerLabels[6].setBackground(Color.white);
         
 	    System.out.println();	
-        System.out.println("Creating window...");
+        System.out.print("Creating window...  ");
 		grid = new PixelGrid(functionCollection);
 		grid.setBounds(0, 0, 601, 601);
 		drawerPanel.add(grid, Integer.valueOf(1));
@@ -414,6 +416,7 @@ public class App extends JPanel {
 
         rowPanels = new ArrayList<JPanel>();
         rowButtons = new ArrayList<JButton>();
+        textFields = new ArrayList<JTextField>();
 
         listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
@@ -450,11 +453,17 @@ public class App extends JPanel {
         });
         drawerPanel.add(scrollPane, Integer.valueOf(1));
 
-        addRow(0); 
+        addRow(0);
+        addRow(1);
+        addRow(2);
     }
     
     public static void addRow(int index) {
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         Dimension rowSize = new Dimension(285, 61);
+        if(index != 0) {
+            functionCollection.add("");
+        }
 
         JPanel rowPanel = new JPanel(new BorderLayout());
         rowPanel.setPreferredSize(rowSize);
@@ -467,7 +476,7 @@ public class App extends JPanel {
         separator.setBackground(Color.GRAY);    
         separator.setPreferredSize(new Dimension(285, 1)); 
         rowPanel.add(separator, BorderLayout.SOUTH);
-
+        
         JButton selectFunction = new JButton("");
         rowButtons.add(selectFunction);
         selectFunction.setBorder(BorderFactory.createEmptyBorder());
@@ -476,6 +485,32 @@ public class App extends JPanel {
         selectFunction.addActionListener(e -> {
             System.out.println(index);
         });
+
+        JTextField textField = new JTextField(30);
+        textFields.add(textField);
+        textField.addActionListener(e -> {
+            
+            String input = textField.getText();
+            input = input.substring(input.indexOf("=") + 1);
+			String func = "(" + input + ")";
+			functionCollection.set(index, func);
+            
+            deleteLines();
+            grid.clearPixels();
+            grid.updateGrid(functionCollection);
+            setUpGraph();
+            for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+                graph(functionIndex);
+            }
+            createLabels();
+            createLines();
+
+            textField.transferFocus();
+            textField.setCaretPosition(0);
+            grid.requestFocusInWindow();
+        });
+        rowPanel.add(textField, BorderLayout.CENTER);
+
         rowPanel.add(selectFunction, BorderLayout.WEST);
 
         listPanel.add(rowPanel);
@@ -783,20 +818,23 @@ public class App extends JPanel {
 	
     //used to optimize panning sideways, moving all points to the left or right instead of recalculating everything
 	public static void shiftYValues(int shiftAmount) {
+        System.out.println(functionCollection);
 		double increment = (maximumX - minimumX)/600.0;
 		if(shiftAmount < 0) { //move function left
 			while(shiftAmount < 0) {
 				shiftX += -increment;
 				parseIndex.clear();
 				for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-					for(int i = 1; i < yValues.get(0).length; i++) {
-						yValues.get(functionIndex)[i - 1] = yValues.get(functionIndex)[i];
-					}
-					parseIndex.add(0);
-                    //Evaluate the edge value 
-					ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
-					Function tempfunction = new Function(formula);
-					yValues.get(functionIndex)[yValues.get(functionIndex).length - 1] = tempfunction.evaluate(maximumX + increment, new ArrayList<Object>(formula), 0);
+                    if(!functionCollection.get(functionIndex).equals("")) {
+                        for(int i = 1; i < yValues.get(0).length; i++) {
+                            yValues.get(functionIndex)[i - 1] = yValues.get(functionIndex)[i];
+                        }
+                        parseIndex.add(0);
+                        //Evaluate the edge value 
+                        ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
+                        Function tempfunction = new Function(formula);
+                        yValues.get(functionIndex)[yValues.get(functionIndex).length - 1] = tempfunction.evaluate(maximumX + increment, new ArrayList<Object>(formula), 0);
+                    } 
 				}
 				minimumX += increment;
 				maximumX += increment;
@@ -808,14 +846,16 @@ public class App extends JPanel {
 				shiftX += increment;
 				parseIndex.clear();
 				for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-					for(int i = yValues.get(0).length - 1; i > 0; i--) {
-						yValues.get(functionIndex)[i] = yValues.get(functionIndex)[i - 1];
-					}
-					parseIndex.add(0);
-                    //Evaluate the edge value 
-					ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
-					Function tempfunction = new Function(formula);
-					yValues.get(functionIndex)[0] = tempfunction.evaluate(minimumX - increment, new ArrayList<Object>(formula), 0);
+                    if(!functionCollection.get(functionIndex).equals("")) {
+                        for(int i = yValues.get(0).length - 1; i > 0; i--) {
+                            yValues.get(functionIndex)[i] = yValues.get(functionIndex)[i - 1];
+                        }
+                        parseIndex.add(0);
+                        //Evaluate the edge value 
+                        ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
+                        Function tempfunction = new Function(formula);
+                        yValues.get(functionIndex)[0] = tempfunction.evaluate(minimumX - increment, new ArrayList<Object>(formula), 0);
+                    }
 				}
 				minimumX -= increment;
 				maximumX -= increment;
@@ -857,7 +897,6 @@ public class App extends JPanel {
 			Function input = new Function(formula);
             //Calculate all y values for the function's range 
 			yValues.add(input.findYValues(minimumX, maximumX));
-
 			initialX.add(minimumX);
 			finalX.add(maximumX);
 		}
@@ -1126,7 +1165,7 @@ public class App extends JPanel {
 		double num = 0;
 		double dec = 0;
 		int decimalcounter = 0;
-		
+	    System.out.println(function);	
 		while(pointer < function.length()) {
 			char tempval = function.charAt(pointer);
 			if (tempval == '+' | tempval == '-' | tempval == '*' | tempval == '/' | tempval == '^') { //If the character is a basic operation

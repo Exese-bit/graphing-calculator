@@ -49,12 +49,42 @@ public class PixelGrid extends JPanel {
 		setFocusable(true);
 		requestFocusInWindow();
 	}
+
+    public void updateGrid(ArrayList<String> functionCollections) {
+        functionCollection = functionCollections;
+        functionAmount = functionCollection.size();
+        pixelColors.clear();
+        pixelVisible.clear();
+        pixelX.clear();
+        pixelY.clear();
+        for(int functionIndex = 0; functionIndex < functionAmount; functionIndex++) {
+			pixelColors.add(new Color[601][601]);
+			pixelVisible.add(new boolean[601][601]);
+			for(int x = 0; x < 601; x++) {
+				for(int y = 0; y < 601; y++) {
+					pixelColors.get(functionIndex)[x][y] = Color.white;
+					pixelVisible.get(functionIndex)[x][y] = false;
+				}
+			}
+		}
+        functionAmount++;
+        pixelColors.add(new Color[601][601]);
+		pixelVisible.add(new boolean[601][601]);
+        for(int x = 0; x < 601; x++) {
+			for(int y = 0; y < 601; y++) {
+				pixelColors.get(pixelColors.size() - 1)[x][y] = Color.white;
+				pixelVisible.get(pixelColors.size() - 1)[x][y] = false;
+			}
+		}
+    }
 	
     //Graphs the point associated with the graph. Only used with graph, not axes lines 
 	public void setPoint(int x, int y, Color color, boolean isVisible, int functionIndex) {
         if(functionIndex == -1) {
-            pixelColors.get(0)[x][y] = Color.white;
-            pixelVisible.get(0)[x][y] = false;
+            for(int i = 0; i < functionAmount; i++) {
+                pixelColors.get(i)[x][y] = Color.white;
+                pixelVisible.get(i)[x][y] = false;
+            }
         } else if(x < 601 && y < 601 && x > -1 && y > -1) {
             pixelColors.get(functionIndex)[x][y] = color;
             pixelVisible.get(functionIndex)[x][y] = isVisible;

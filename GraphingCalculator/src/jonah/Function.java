@@ -170,7 +170,11 @@ public class Function {
 
         //Calculate each yValue 
 		for(int x = 0; x <= 600; x += 1) {
-			YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
+            if(equation.size() > 0) {
+			    YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
+            } else {
+                YValues[x] = Double.NaN;
+            }
 			xVal += range/600;
 		}
 		return YValues;
