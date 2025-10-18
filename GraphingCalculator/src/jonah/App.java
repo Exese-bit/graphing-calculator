@@ -82,7 +82,9 @@ public class App extends JPanel {
     private static ArrayList<JPanel> rowPanels;
     private static ArrayList<JButton> rowButtons;
     private static ArrayList<JTextField> textFields;
-    
+    private static ArrayList<JPanel> selectPanels;
+    private static ArrayList<JPanel> removePanels;
+    private static ArrayList<Integer> indexes;
     
 	public static void main(String[] args) {
 
@@ -416,10 +418,14 @@ public class App extends JPanel {
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		frame.setResizable(false);
+        
+        indexes = new ArrayList<Integer>();
 
         rowPanels = new ArrayList<JPanel>();
         rowButtons = new ArrayList<JButton>();
         textFields = new ArrayList<JTextField>();
+        selectPanels = new ArrayList<JPanel>();
+        removePanels = new ArrayList<JPanel>();
 
         listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
@@ -465,7 +471,6 @@ public class App extends JPanel {
         if(index != 0) {
             functionCollection.add("");
         }
-
         JPanel rowPanel = new JPanel(new BorderLayout());
         rowPanel.setPreferredSize(rowSize);
         rowPanel.setMinimumSize(rowSize);
@@ -478,19 +483,47 @@ public class App extends JPanel {
         separator.setPreferredSize(new Dimension(285, 1)); 
         rowPanel.add(separator, BorderLayout.SOUTH);
         
+        JPanel selectPanel = new JPanel();
+        selectPanel.setLayout(new BorderLayout());
+        selectPanel.setPreferredSize(new Dimension(25, 60));
+        selectPanel.setBackground(Color.white);
+        selectPanels.add(selectPanel);
+        
         JButton selectFunction = new JButton("");
         rowButtons.add(selectFunction);
         selectFunction.setBorder(BorderFactory.createEmptyBorder());
         selectFunction.setBackground(Color.LIGHT_GRAY);
         selectFunction.setPreferredSize(new Dimension(20, 60));
         selectFunction.addActionListener(e -> {
-            System.out.println(index);
+            selectFunction.transferFocus();
+            grid.requestFocusInWindow();
+        });
+        selectPanel.add(selectFunction, BorderLayout.WEST);
+
+        JPanel removePanel = new JPanel();
+        removePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        removePanel.setPreferredSize(new Dimension(20, 60));
+        removePanel.setBackground(Color.white);
+        removePanels.add(removePanel);
+
+        JButton removeFunction = new JButton("X");
+        removeFunction.setBorder(BorderFactory.createEmptyBorder());
+        removeFunction.setBackground(new Color(217, 86, 82));
+        removeFunction.setPreferredSize(new Dimension(20, 20));
+        removeFunction.addActionListener(e -> {
+            if(functionCollection.size() > 1) {
+                deleteRow(index);
+                removeFunction.transferFocus();
+                grid.requestFocusInWindow();
+            }
         });
 
+        removePanel.add(removeFunction);
+
         JTextField textField = new JTextField(30);
+        textField.setBorder(null);
         textFields.add(textField);
         textField.addActionListener(e -> {
-            
             String input = textField.getText();
             String func = "(" + input + ")";
             if(!input.equals("")) {
@@ -514,9 +547,10 @@ public class App extends JPanel {
             textField.setCaretPosition(0);
             grid.requestFocusInWindow();
         });
-        rowPanel.add(textField, BorderLayout.CENTER);
 
-        rowPanel.add(selectFunction, BorderLayout.WEST);
+        rowPanel.add(textField, BorderLayout.CENTER);
+        rowPanel.add(selectPanel, BorderLayout.WEST);
+        rowPanel.add(removePanel, BorderLayout.EAST);
 
         listPanel.add(rowPanel);
     }
@@ -542,6 +576,10 @@ public class App extends JPanel {
             rowButtons.remove(index);
             textFields.remove(index);
         }
+    }
+    
+    public static void updateIndexes(int index) {
+        
     }
 
     //move the pointVisualizer (the circle and lable to show the coordinates of a point)
