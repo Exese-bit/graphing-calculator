@@ -84,7 +84,7 @@ public class App extends JPanel {
     private static ArrayList<JTextField> textFields;
     private static ArrayList<JPanel> selectPanels;
     private static ArrayList<JPanel> removePanels;
-    private static ArrayList<Integer> indexes;
+    private static ArrayList<Index> indexes;
     
 	public static void main(String[] args) {
 
@@ -419,7 +419,7 @@ public class App extends JPanel {
 		frame.setVisible(true);
 		frame.setResizable(false);
         
-        indexes = new ArrayList<Integer>();
+        indexes = new ArrayList<Index>();
 
         rowPanels = new ArrayList<JPanel>();
         rowButtons = new ArrayList<JButton>();
@@ -465,12 +465,17 @@ public class App extends JPanel {
         addRow(0);
     }
     
+    //adds a row to the scrollPane with a select function button, a remove function button, and a text field to enter a function + decoration
     public static void addRow(int index) {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         Dimension rowSize = new Dimension(285, 61);
         if(index != 0) {
             functionCollection.add("");
         }
+
+        Index thisIndex = new Index(index);
+        indexes.add(thisIndex);
+
         JPanel rowPanel = new JPanel(new BorderLayout());
         rowPanel.setPreferredSize(rowSize);
         rowPanel.setMinimumSize(rowSize);
@@ -495,6 +500,7 @@ public class App extends JPanel {
         selectFunction.setBackground(Color.LIGHT_GRAY);
         selectFunction.setPreferredSize(new Dimension(20, 60));
         selectFunction.addActionListener(e -> {
+            System.out.println(thisIndex.getIndex());
             selectFunction.transferFocus();
             grid.requestFocusInWindow();
         });
@@ -512,7 +518,7 @@ public class App extends JPanel {
         removeFunction.setPreferredSize(new Dimension(20, 20));
         removeFunction.addActionListener(e -> {
             if(functionCollection.size() > 1) {
-                deleteRow(index);
+                deleteRow(thisIndex.getIndex());
                 removeFunction.transferFocus();
                 grid.requestFocusInWindow();
             }
@@ -531,7 +537,7 @@ public class App extends JPanel {
             } else {
                 func = "";
             }
-			functionCollection.set(index, func);
+			functionCollection.set(thisIndex.getIndex(), func);
             
             deleteLines();
             grid.clearPixels();
@@ -555,9 +561,11 @@ public class App extends JPanel {
         listPanel.add(rowPanel);
     }
     
+    //deletes a row from the scrollPane 
     public static void deleteRow(int index) {
         if(functionCollection.size() > 1) {
             functionCollection.remove(index);
+            updateIndexes(index);
             listPanel.remove(rowPanels.get(index));
             listPanel.revalidate();
             listPanel.repaint();
@@ -578,8 +586,11 @@ public class App extends JPanel {
         }
     }
     
+    //updates the indexes for each row in the scrollPane when a row is deleted
     public static void updateIndexes(int index) {
-        
+         for(int i = index + 1; i < indexes.size(); i++) {
+            indexes.get(i).updateIndex();
+        }
     }
 
     //move the pointVisualizer (the circle and lable to show the coordinates of a point)
