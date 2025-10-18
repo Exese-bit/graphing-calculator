@@ -19,6 +19,12 @@ import java.util.HashSet;
 
 import javax.swing.*;
 
+/*
+ * A graphing calculator built completely from scratch with a custom parser, math engine, GUI, and graphing algorithm. Utilizes the Java Math class for basic operations and trigonometry. Built with Swing.
+ *
+ * @author Jonah Zilberter
+ * @since 2025-06-07
+ */
 public class App extends JPanel {
     
     //Variables for parsing + keep track of graph positions
@@ -92,20 +98,7 @@ public class App extends JPanel {
 		System.out.println("____________________________________________________");
 		functionCollection = new ArrayList<String>();
 		boolean startGraph = false;
-	    
-        /*
-		while(!startGraph) {
-			System.out.println();
-			System.out.println("Input your next Function below: (Type \"GRAPH\" to confirm all functions)");
-			System.out.print("y = ");
-			String func = "(" + userinput.nextLine() + ")";
-			if(func.equalsIgnoreCase("(GRAPH)")) {
-				startGraph = true;
-			} else {
-				functionCollection.add(func);
-			}
-		}
-        */
+
         functionCollection.add("");
         drawGUI();
 		setUpGraph();
@@ -123,6 +116,12 @@ public class App extends JPanel {
 		grid.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
                 if(!isShowingPoint) {
+                    if(e.getKeyChar() == KeyEvent.VK_ENTER) {
+                        addRow(rowPanels.size());
+                    } 
+                    if(e.getKeyChar() == KeyEvent.VK_BACK_SPACE) {
+                        deleteRow(rowPanels.size() - 1);
+                    }
                     if(e.getKeyChar() == 'i' | e.getKeyChar() == 'o') { //if zooming
                         double lineDiff = 0;
                         
@@ -253,10 +252,14 @@ public class App extends JPanel {
                     test.add(603 - e.getY());
                     for(int k = 0; k < 3; k++) {
                         for(int j = 0; j < 7; j++) {
-                            if(allCoordinates.get(i).contains(test)) {
-                               touching = i;
+                            try {
+                                if(allCoordinates.get(i).contains(test)) {
+                                    touching = i;
+                                }
+                                test.set(1, test.get(1) - 1);
+                            } catch (IndexOutOfBoundsException s) {
+
                             }
-                            test.set(1, test.get(1) - 1);
                         }
                         test.set(0, test.get(0) + 1);
                         test.set(1, 603 - e.getY());
@@ -454,8 +457,6 @@ public class App extends JPanel {
         drawerPanel.add(scrollPane, Integer.valueOf(1));
 
         addRow(0);
-        addRow(1);
-        addRow(2);
     }
     
     public static void addRow(int index) {
@@ -518,6 +519,29 @@ public class App extends JPanel {
         rowPanel.add(selectFunction, BorderLayout.WEST);
 
         listPanel.add(rowPanel);
+    }
+    
+    public static void deleteRow(int index) {
+        if(functionCollection.size() > 1) {
+            functionCollection.remove(index);
+            listPanel.remove(rowPanels.get(index));
+            listPanel.revalidate();
+            listPanel.repaint();
+
+            deleteLines();
+            grid.clearPixels();
+            grid.updateGrid(functionCollection);
+            setUpGraph();
+            for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
+                graph(functionIndex);
+            }
+            createLabels();
+            createLines();
+
+            rowPanels.remove(index);
+            rowButtons.remove(index);
+            textFields.remove(index);
+        }
     }
 
     //move the pointVisualizer (the circle and lable to show the coordinates of a point)
