@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import javax.swing.*;
-
+import javax.swing.border.LineBorder;
 /*
  * A graphing calculator built completely from scratch with a custom parser, math engine, GUI, and graphing algorithm. Utilizes the Java Math class for basic operations and trigonometry. Built with Swing.
  *
@@ -506,15 +506,16 @@ public class App extends JPanel {
         selectPanel.add(selectFunction, BorderLayout.WEST);
 
         JPanel removePanel = new JPanel();
-        removePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        removePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 5));
         removePanel.setPreferredSize(new Dimension(20, 60));
         removePanel.setBackground(Color.white);
         removePanels.add(removePanel);
-
+        
         JButton removeFunction = new JButton("X");
-        removeFunction.setBorder(BorderFactory.createEmptyBorder());
-        removeFunction.setBackground(new Color(217, 86, 82));
-        removeFunction.setPreferredSize(new Dimension(20, 20));
+        removeFunction.setBorder(new LineBorder(Color.gray, 1, false));
+        removeFunction.setBackground(Color.white);
+        removeFunction.setForeground(Color.gray);
+        removeFunction.setPreferredSize(new Dimension(15, 15));
         removeFunction.addActionListener(e -> {
             if(functionCollection.size() > 1) {
                 deleteRow(thisIndex.getIndex());
@@ -532,7 +533,7 @@ public class App extends JPanel {
             String input = textField.getText();
             String func = "(" + input + ")";
             if(!input.equals("")) {
-                input = input.substring(input.indexOf("=") + 1);
+               input = input.substring(input.indexOf("=") + 1);
             } else {
                 func = "";
             }
