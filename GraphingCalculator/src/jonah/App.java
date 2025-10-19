@@ -612,7 +612,6 @@ public class App extends JPanel {
             if(Math.abs(Double.parseDouble(xPrint)) < 0.0000000001) {
                 xPrint = "0";
             }
-            
             //Format value for x and y coordinates so they fit within the label 
             if((xPrint).indexOf("E") != -1) {
                 double exponent = Double.parseDouble(xPrint.substring(xPrint.indexOf("E") + 1));
@@ -626,7 +625,16 @@ public class App extends JPanel {
                     yPrint = round((yValues.get(functionIndex)[x]), 3) + "";
                 }
             }
-
+            if(xPrint.length() > 2) {
+                if(xPrint.substring(xPrint.length() - 2).equals(".0")) { //If number has an empty fractional part, remove decimal point
+			        xPrint = xPrint.substring(0, xPrint.length() - 2);
+		        }
+            }
+            if(yPrint.length() > 2) {
+                if(yPrint.substring(yPrint.length() - 2).equals(".0")) { //If number has an empty fractional part, remove decimal point
+			        yPrint = yPrint.substring(0, yPrint.length() - 2);
+		        } 
+            }
             String textPrint = (xPrint + ", " + yPrint);
             int length = 4 * textPrint.length(); 
             pointVisualizerLabels[6].setBounds(x - length, y - 30, length * 2, 20);
