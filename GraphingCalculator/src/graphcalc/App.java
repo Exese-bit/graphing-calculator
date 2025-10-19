@@ -587,15 +587,16 @@ public class App extends JPanel {
             listPanel.revalidate();
             listPanel.repaint();
 
-            deleteLines();
             grid.clearPixels();
             grid.updateGrid(functionCollection);
             setUpGraph();
             for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
                 graph(functionIndex);
             }
-            createLabels();
+            deleteLines();
+            fixGraph();
             createLines();
+            createLabels();
 
             rowPanels.remove(index);
             rowButtons.remove(index);
@@ -981,7 +982,6 @@ public class App extends JPanel {
 
     //sets up all variables to parse/graph all functions 
 	public static void setUpGraph() {
-        updateConsole("");
         drawerPanel.repaint();
         grid.clearPixels();
         grid.clearPixels();
@@ -1007,8 +1007,8 @@ public class App extends JPanel {
 			yPointPositions.add(new int[601]);
 			ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
 			Function input = new Function(formula);
-            //Calculate all y values for the function's range 
-			yValues.add(input.findYValues(minimumX, maximumX));
+            //Calculate all y values for the function's range
+			yValues.add(input.findYValues(minimumX, maximumX, consoleText));
 			initialX.add(minimumX);
 			finalX.add(maximumX);
 		}

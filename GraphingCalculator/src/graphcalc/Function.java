@@ -1,6 +1,7 @@
 package graphcalc;
 
 import java.util.ArrayList;
+import javax.swing.JLabel;
 
 public class Function {
 	private ArrayList<Object> equation;
@@ -163,13 +164,14 @@ public class Function {
 	}
 	
     //Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX]
-	public double[] findYValues(double lowerX, double higherX) {
+	public double[] findYValues(double lowerX, double higherX, JLabel console) {
 		double[] YValues = new double[601];
 		double range = higherX - lowerX;
 		double xVal = lowerX;
 
         //Calculate each yValue 
 		for(int x = 0; x <= 600; x += 1) {
+             
             if(equation.size() > 0) {
 			    YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
             } else {
