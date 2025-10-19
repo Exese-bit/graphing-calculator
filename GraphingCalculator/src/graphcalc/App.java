@@ -539,15 +539,17 @@ public class App extends JPanel {
             }
 			functionCollection.set(thisIndex.getIndex(), func);
             
-            deleteLines();
             grid.clearPixels();
             grid.updateGrid(functionCollection);
             setUpGraph();
             for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
                 graph(functionIndex);
             }
-            createLabels();
+            deleteLines();
+            fixGraph();
             createLines();
+            createLabels();
+
 
             textField.transferFocus();
             textField.setCaretPosition(0);
