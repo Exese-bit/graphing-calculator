@@ -84,6 +84,7 @@ public class App extends JPanel {
     private static ArrayList<JPanel> selectPanels;
     private static ArrayList<JPanel> removePanels;
     private static ArrayList<Index> indexes;
+    private static JLabel consoleText;
     
 	public static void main(String[] args) {
 
@@ -96,7 +97,7 @@ public class App extends JPanel {
 		System.out.println("██╔══╝  ██║██║     ██║  ██╗██╔══██║██║     ██║  ██╗ ");
 		System.out.println("███████╗██║███████╗╚█████╔╝██║  ██║███████╗╚█████╔╝ ");
 		System.out.println("╚══════╝╚═╝╚══════╝ ╚════╝ ╚═╝  ╚═╝╚══════╝ ╚════╝  ");
-		System.out.println("____________________________________________________");
+		System.out.println("____________________________________________________\n");
 		functionCollection = new ArrayList<String>();
 		boolean startGraph = false;
 
@@ -111,7 +112,6 @@ public class App extends JPanel {
 		createLabels();
 		
 		drawerPanel.setVisible(true);
-        System.out.println("Done!\n");
         movePointVisualizer(false, 10, 10, 0);
 
 		grid.addKeyListener(new KeyAdapter() {
@@ -368,9 +368,9 @@ public class App extends JPanel {
         isShowingPoint = false;
 
         frame = new JFrame("Pixel Grid");
-        frame.setSize(901, 601);
+        frame.setSize(901, 631);
 		drawerPanel = new JLayeredPane();
-		drawerPanel.setPreferredSize(new Dimension(901, 601));
+		drawerPanel.setPreferredSize(new Dimension(901, 631));
 		
 		xLabels = new JLabel[23];
 		yLabels = new JLabel[23];
@@ -404,8 +404,6 @@ public class App extends JPanel {
         pointVisualizerLabels[4].setBackground(Color.white);
         pointVisualizerLabels[6].setBackground(Color.white);
         
-	    System.out.println();	
-        System.out.print("Creating window...  ");
 		grid = new PixelGrid(functionCollection);
 		grid.setBounds(0, 0, 601, 601);
 		drawerPanel.add(grid, Integer.valueOf(1));
@@ -425,12 +423,29 @@ public class App extends JPanel {
         textFields = new ArrayList<JTextField>();
         selectPanels = new ArrayList<JPanel>();
         removePanels = new ArrayList<JPanel>();
+        consoleText = new JLabel();
+        
+        JLabel flatBorder = new JLabel();
+        flatBorder.setBounds(0, 602, 601, 1);
+        flatBorder.setBackground(Color.gray);
+        flatBorder.setOpaque(true);
+        drawerPanel.add(flatBorder, Integer.valueOf(4));
+        JLabel verticalBorder = new JLabel();
+        verticalBorder.setBounds(600, 598, 1, 33);
+        verticalBorder.setBackground(Color.gray);
+        verticalBorder.setOpaque(true);
+        drawerPanel.add(verticalBorder, Integer.valueOf(4));
 
+        consoleText.setBounds(5, 602, 595, 30);
+        consoleText.setOpaque(true);
+        drawerPanel.add(consoleText, Integer.valueOf(1));
+        consoleText.setText(">>>");
+    
         listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         scrollPane = new JScrollPane(listPanel);
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
-        scrollPane.setBounds(600, 0, 300, 601);
+        scrollPane.setBounds(600, 0, 300, 604);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
         verticalBar.setPreferredSize(new Dimension(10, Integer.MAX_VALUE));
@@ -459,7 +474,7 @@ public class App extends JPanel {
                 return button;
             }
         });
-        drawerPanel.add(scrollPane, Integer.valueOf(1));
+        drawerPanel.add(scrollPane, Integer.valueOf(3));
 
         addRow(0);
     }
@@ -690,6 +705,7 @@ public class App extends JPanel {
 				yLabels[i].setVisible(false);
 			}
 		}
+        updateConsole("Creating graph... Done!");
 	}
 	
     //rounds a double, leaving a certain amount of decimal points
@@ -959,8 +975,14 @@ public class App extends JPanel {
 		return Math.abs(yPoint - yVal) <= increment;
 	}
 	
+    public static void updateConsole(String text) {
+        consoleText.setText(">>> " + text);
+    }
+
     //sets up all variables to parse/graph all functions 
 	public static void setUpGraph() {
+        updateConsole("");
+        drawerPanel.repaint();
         grid.clearPixels();
         grid.clearPixels();
 		parseIndex.clear();
