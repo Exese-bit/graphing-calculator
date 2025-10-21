@@ -16,8 +16,10 @@ import java.util.Scanner;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import javax.swing.*;
+import java.util.concurrent.CompletableFuture;
+
 import javax.swing.border.LineBorder;
+import javax.swing.*;
 /*
  * A graphing calculator built completely from scratch with a custom parser, math engine, GUI, and graphing algorithm. Utilizes the Java Math class for basic operations and trigonometry. Built with Swing.
  *
@@ -99,11 +101,10 @@ public class App extends JPanel {
 		System.out.println("╚══════╝╚═╝╚══════╝ ╚════╝ ╚═╝  ╚═╝╚══════╝ ╚════╝  ");
 		System.out.println("____________________________________________________\n");
 		functionCollection = new ArrayList<String>();
-		boolean startGraph = false;
 
         functionCollection.add("");
         drawGUI();
-		setUpGraph();
+		setUpGraph(false);
 		for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
 			graph(functionIndex);
 		}
@@ -174,11 +175,11 @@ public class App extends JPanel {
                         int diff = e.getX() - prevX;
                         deleteLines();
                         shiftYValues(diff);
-                        setUpGraph();
-                        prevX = e.getX();
-                        for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                            graph(functionIndex);
+                        setUpGraph(false);
+                        for(int i = 0; i < functionCollection.size(); i++) {
+                            graph(i);
                         }
+                        prevX = e.getX();
                         createLines();
                         double lineDiff = Math.abs(xLines[13] - xLines[12]); //Distance between x lines
                         if(Math.abs(shiftX) > lineDiff) { //If the pan is too far sideways, update line positions
@@ -204,11 +205,11 @@ public class App extends JPanel {
                         int diff = e.getY() - prevY;
                         deleteLines();
                         displaceYValues(diff);
-                        setUpGraph();
-                        prevY = e.getY();
-                        for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                            graph(functionIndex);
+                        setUpGraph(false);
+                        for(int i = 0; i < functionCollection.size(); i++) {
+                            graph(i);
                         }
+                        prevY = e.getY();
                         createLines();
                         double lineDiff = Math.abs(xLines[13] - xLines[12]); //Distance between y lines
                         if(Math.abs(shiftY) > lineDiff) { //If panning too far up/down, update y line positions
@@ -309,8 +310,8 @@ public class App extends JPanel {
                     if(e.getWheelRotation() > 0) { //zoom out
                         deleteLines();
                         zoom(-3);
-                        for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                            graph(functionIndex);
+                        for(int i = 0; i < functionCollection.size(); i++) {
+                            graph(i);
                         }
                         createLines();
                         if(lineDiff < 60) { //If lines are too close, update positions
@@ -322,8 +323,8 @@ public class App extends JPanel {
                     if(e.getWheelRotation() < 0) { //zoom in
                         deleteLines();
                         zoom(+3);
-                        for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                            graph(functionIndex);
+                        for(int i = 0; i < functionCollection.size(); i++) {
+                            graph(i);
                         }
                         createLines();
                         if(lineDiff > 100) { //If lines are too far apart, update positions
@@ -545,6 +546,7 @@ public class App extends JPanel {
         textField.setBorder(null);
         textFields.add(textField);
         textField.addActionListener(e -> {
+            consoleText.setText("Creating graph... ");
             String input = textField.getText();
             String func = "(" + input + ")";
             if(!input.equals("")) {
@@ -556,16 +558,8 @@ public class App extends JPanel {
             
             grid.clearPixels();
             grid.updateGrid(functionCollection);
-            setUpGraph();
-            for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                graph(functionIndex);
-            }
-            deleteLines();
-            fixGraph();
-            createLines();
-            createLabels();
-
-
+            setUpGraph(true);
+            
             textField.transferFocus();
             textField.setCaretPosition(0);
             grid.requestFocusInWindow();
@@ -589,14 +583,7 @@ public class App extends JPanel {
 
             grid.clearPixels();
             grid.updateGrid(functionCollection);
-            setUpGraph();
-            for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                graph(functionIndex);
-            }
-            deleteLines();
-            fixGraph();
-            createLines();
-            createLabels();
+            setUpGraph(true);
 
             rowPanels.remove(index);
             rowButtons.remove(index);
@@ -706,7 +693,7 @@ public class App extends JPanel {
 				yLabels[i].setVisible(false);
 			}
 		}
-        updateConsole("Creating graph... Done!");
+        updateConsole("");
 	}
 	
     //rounds a double, leaving a certain amount of decimal points
@@ -981,8 +968,7 @@ public class App extends JPanel {
     }
 
     //sets up all variables to parse/graph all functions 
-	public static void setUpGraph() {
-        drawerPanel.repaint();
+	public static void setUpGraph(boolean showProgress) {
         grid.clearPixels();
         grid.clearPixels();
 		parseIndex.clear();
@@ -996,6 +982,7 @@ public class App extends JPanel {
         allCoordinates.clear();
 		initialX.clear();
 		finalX.clear();
+        ArrayList<CompletableFuture<double[]>> valuesList = new ArrayList<>();
 		for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
             yPairs.add(new ArrayList<Integer[]>());
             xPairs.add(new ArrayList<Integer[]>());
@@ -1007,11 +994,31 @@ public class App extends JPanel {
 			yPointPositions.add(new int[601]);
 			ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
 			Function input = new Function(formula);
-            //Calculate all y values for the function's range
-			yValues.add(input.findYValues(minimumX, maximumX, consoleText));
+            //Calculate all y values for the function's range 
+            if(showProgress) {
+                CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress);
+                valuesList.add(futureValues);
+            } else {
+                yValues.add(input.findYValues(minimumX, maximumX));
+            }
 			initialX.add(minimumX);
 			finalX.add(maximumX);
 		}
+        if(showProgress) {
+            CompletableFuture<Void> allDone = CompletableFuture.allOf(valuesList.toArray(new CompletableFuture[0]));
+            allDone.thenRun(() -> {
+                for(CompletableFuture<double[]> c : valuesList) {
+                    yValues.add(c.join());
+                }
+                for(int i = 0; i < functionCollection.size(); i++) {
+                    graph(i);
+                }
+                deleteLines();
+                fixGraph();
+                createLines();
+                createLabels();
+            });
+        }
 	}
 	
     //changes the range variables depending on zooming in(+1) or zooming out(-1)
@@ -1021,7 +1028,7 @@ public class App extends JPanel {
 		maximumX -= increment;
 		minimumY += increment;
 		maximumY -= increment;
-		setUpGraph();
+		setUpGraph(false);
 	}
     
     //returns the yValue for the pixel at a given yValue of a function 

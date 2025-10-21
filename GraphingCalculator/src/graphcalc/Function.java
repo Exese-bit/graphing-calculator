@@ -1,7 +1,8 @@
 package graphcalc;
 
 import java.util.ArrayList;
-import javax.swing.JLabel;
+import javax.swing.*;
+import java.util.concurrent.CompletableFuture;
 
 public class Function {
 	private ArrayList<Object> equation;
@@ -164,14 +165,43 @@ public class Function {
 	}
 	
     //Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX]
-	public double[] findYValues(double lowerX, double higherX, JLabel console) {
+	public CompletableFuture<double[]> findYValues(double lowerX, double higherX, JLabel console, boolean showProgress) {
+        CompletableFuture<double[]> futureValues = new CompletableFuture<>();
+
+		double[] YValues = new double[601];
+		double range = higherX - lowerX;
+        Thread t = new Thread(() -> {
+            double xVal = lowerX;
+            for(int x = 0; x <= 600; x += 1) {
+                if(equation.size() > 0) {
+                    YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
+                } else {
+                    YValues[x] = Double.NaN;
+                }
+                xVal += range/600;
+
+                int progress = x + 1;
+                if(showProgress) {
+                    SwingUtilities.invokeLater(() -> { 
+                        console.setText("Creating graph: (" + progress + "/601)");
+                    });
+                }
+            }
+            futureValues.complete(YValues);
+        });
+
+        t.start();
+        return futureValues;
+	}
+    
+    //Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX]
+	public double[] findYValues(double lowerX, double higherX) {
 		double[] YValues = new double[601];
 		double range = higherX - lowerX;
 		double xVal = lowerX;
 
         //Calculate each yValue 
 		for(int x = 0; x <= 600; x += 1) {
-             
             if(equation.size() > 0) {
 			    YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
             } else {
@@ -181,7 +211,7 @@ public class Function {
 		}
 		return YValues;
 	}
-	
+
     //Defines how to calculate the value of an operation and returns the value of that operation 
 	private double Operations(String operator, double result, double operand) {
 		double res = result;
