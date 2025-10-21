@@ -547,7 +547,6 @@ public class App extends JPanel {
         textField.setBorder(null);
         textFields.add(textField);
         textField.addActionListener(e -> {
-            consoleText.setText("Creating graph... ");
             String input = textField.getText();
             String func = "(" + input + ")";
             if(!input.equals("")) {
@@ -560,7 +559,7 @@ public class App extends JPanel {
             grid.clearPixels();
             grid.updateGrid(functionCollection);
             setUpGraph(true);
-            
+
             textField.transferFocus();
             textField.setCaretPosition(0);
             grid.requestFocusInWindow();
@@ -694,7 +693,6 @@ public class App extends JPanel {
 				yLabels[i].setVisible(false);
 			}
 		}
-        updateConsole("");
 	}
 	
     //rounds a double, leaving a certain amount of decimal points
@@ -968,7 +966,14 @@ public class App extends JPanel {
         consoleText.setText(">>> " + text);
     }
 
-    //sets up all variables to parse/graph all functions 
+    /*Sets up all variables to parse/graph all functions 
+     *
+     *  if showProgress is true, it will call the overloaded Function.findYValues 
+     *      this will create a new thread for each evaluate call, and each thread will update the console as a function has been evaluated at a specific x value 
+     *      once each thread is complete, it will graph by calling graph() and draw the labels/lines with createLabel() and createLines()
+     *  
+     *  if showProgress is false, it will compute each function's y values by calling the original Function.findYValues and will not graph afterwards
+     */
 	public static void setUpGraph(boolean showProgress) {
         grid.clearPixels();
         grid.clearPixels();
@@ -997,21 +1002,25 @@ public class App extends JPanel {
 			parseIndex.add(0);
 			yValuePositions.add(new String[601]);
 			yPointPositions.add(new int[601]);
+
 			ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
 			Function input = new Function(formula);
+
             //Calculate all y values for the function's range 
-            if(showProgress) {
+            if(showProgress) { //Create a new thread which will update the consoleText with the globalProgress once a function has been evaluated at an x 
                 CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress, globalProgress, totalWork);
                 valuesList.add(futureValues);
-            } else {
+            } else { //Simply evaluate but do not create a seperate thread 
                 yValues.add(input.findYValues(minimumX, maximumX));
             }
 			initialX.add(minimumX);
 			finalX.add(maximumX);
 		}
         if(showProgress) {
+            createLines();
+            createLabels();
             CompletableFuture<Void> allDone = CompletableFuture.allOf(valuesList.toArray(new CompletableFuture[0]));
-            allDone.thenRun(() -> {
+            allDone.thenRun(() -> { //Once all threads are done and all yValues have been computed, graph the functions and create the labels/lines
                 for(CompletableFuture<double[]> c : valuesList) {
                     yValues.add(c.join());
                 }
@@ -1022,6 +1031,7 @@ public class App extends JPanel {
                 fixGraph();
                 createLines();
                 createLabels();
+                updateConsole("");
             });
         }
 	}

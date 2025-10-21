@@ -165,8 +165,15 @@ public class Function {
 		return (double)formula.get(0);
 	}
 	
-    //Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX]
-	public CompletableFuture<double[]> findYValues(double lowerX, double higherX, JLabel console, boolean showProgress, AtomicInteger progress, int totalWork) {
+    /* 
+     * Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX] (Overloaded version of original findYValues method)
+     *
+     *  As each y value has been computed, it will increment the global progress and update the JLabel's text to show the new progress 
+     *  Each call of findYValues creates a new thread 
+     *  Each thread will eventually return a CompletableFuture as each y value has been computed
+     *     
+     */
+    public CompletableFuture<double[]> findYValues(double lowerX, double higherX, JLabel console, boolean showProgress, AtomicInteger progress, int totalWork) {
         CompletableFuture<double[]> futureValues = new CompletableFuture<>();
 
 		double[] YValues = new double[601];
@@ -195,7 +202,7 @@ public class Function {
         return futureValues;
 	}
     
-    //Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX]
+    //Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX] (original findYValues method)
 	public double[] findYValues(double lowerX, double higherX) {
 		double[] YValues = new double[601];
 		double range = higherX - lowerX;
