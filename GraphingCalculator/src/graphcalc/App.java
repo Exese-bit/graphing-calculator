@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.border.LineBorder;
 import javax.swing.*;
@@ -982,7 +983,11 @@ public class App extends JPanel {
         allCoordinates.clear();
 		initialX.clear();
 		finalX.clear();
+
         ArrayList<CompletableFuture<double[]>> valuesList = new ArrayList<>();
+        AtomicInteger globalProgress = new AtomicInteger(0);
+        int totalWork = 601 * functionCollection.size();
+
 		for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
             yPairs.add(new ArrayList<Integer[]>());
             xPairs.add(new ArrayList<Integer[]>());
@@ -996,7 +1001,7 @@ public class App extends JPanel {
 			Function input = new Function(formula);
             //Calculate all y values for the function's range 
             if(showProgress) {
-                CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress);
+                CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress, globalProgress, totalWork);
                 valuesList.add(futureValues);
             } else {
                 yValues.add(input.findYValues(minimumX, maximumX));

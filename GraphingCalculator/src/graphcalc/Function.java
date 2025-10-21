@@ -3,6 +3,7 @@ package graphcalc;
 import java.util.ArrayList;
 import javax.swing.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Function {
 	private ArrayList<Object> equation;
@@ -165,7 +166,7 @@ public class Function {
 	}
 	
     //Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX]
-	public CompletableFuture<double[]> findYValues(double lowerX, double higherX, JLabel console, boolean showProgress) {
+	public CompletableFuture<double[]> findYValues(double lowerX, double higherX, JLabel console, boolean showProgress, AtomicInteger progress, int totalWork) {
         CompletableFuture<double[]> futureValues = new CompletableFuture<>();
 
 		double[] YValues = new double[601];
@@ -180,10 +181,10 @@ public class Function {
                 }
                 xVal += range/600;
 
-                int progress = x + 1;
+                int currentProgress = progress.incrementAndGet();
                 if(showProgress) {
                     SwingUtilities.invokeLater(() -> { 
-                        console.setText("Creating graph: (" + progress + "/601)");
+                        console.setText("Creating graph: (" + currentProgress + "/" + totalWork + ")");
                     });
                 }
             }
