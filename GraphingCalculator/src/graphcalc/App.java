@@ -548,9 +548,14 @@ public class App extends JPanel {
         textFields.add(textField);
         textField.addActionListener(e -> {
             String input = textField.getText();
-            String func = "(" + input + ")";
+            String func;
             if(!input.equals("")) {
-               input = input.substring(input.indexOf("=") + 1);
+                if(input.indexOf("=") == 1) {
+                    input = input.substring(input.indexOf("=") + 1);
+                    func = "(" + input + ")";
+                } else {
+                    func = "y";
+                }
             } else {
                 func = "";
             }
@@ -1283,13 +1288,15 @@ public class App extends JPanel {
     /* 
      * Parses the text-inputted function into an arrayList of operations and numbers, used later to compute values in the Function class 
      * 
-     * Can only parse in standard format, i.e. 2 + 2 or 2 * sin(x). That is, the number is followed by an operation and then another number.
+     * Can only parse in standard format, i.e. 2+2 or 2*sin(x). That is, the number is followed by an operation and then another number.
      *
      * Uses a state machine to parse, where: 
      *  ST = At first character, has no previous state 
      *  NUM = Creating an Integer
      *  DEC = Adding a decimal part to the integer 
-     *  IDLE = Done with creating the number (Default state, used when parsing operations)
+     *  IDLE = Done with creating the number (Default state)
+     *  FUNC = A function has been declared, expecting a "(" afterwards as an argument
+     *  OP = An operator has been declared, expecting a function or value afterwards
      *
      */
 	public static ArrayList<Object> ParseFunction(String function, int functionIndex) {
@@ -1300,25 +1307,39 @@ public class App extends JPanel {
 		double dec = 0;
 		int decimalcounter = 0;
 		while(pointer < function.length()) {
+            //System.out.print(pointer + ": ");
 			char tempval = function.charAt(pointer);
+            //System.out.println(tempval);
+            if(state.equals("FUNC")) {
+                if(tempval != '(') {
+                    throw new IllegalArgumentException("A function must be followed by parentheses");
+                }
+            }
 			if (tempval == '+' | tempval == '-' | tempval == '*' | tempval == '/' | tempval == '^') { //If the character is a basic operation
+                if(state.equals("OP")) {
+                    throw new IllegalArgumentException("Operator after another operator");
+                }
 				if(state.equals("DEC")) { //Add decimal component to number 
 					num += dec/(Math.pow(10, decimalcounter));
 					state = "NUM";
 					decimalcounter = 0;
 					dec = 0;
 				}
-				if(state.equals("NUM")) { //Add number to array list 
+	            if(state.equals("NUM")) { //Add number to array list 
 					operation.add(num);
 					num = 0;
 				}  
 				operation.add("" + tempval); //Once done with previous number, add operation 
-				state = "IDLE";
-			}
-			if(tempval == '.') { //Enter decimal state if there is a decimal point after the number
+				state = "OP";
+			} else if(tempval == '.') { //Enter decimal state if there is a decimal point after the number
+                if(!state.equals("NUM")) {
+                    System.out.println("no");
+                    throw new IllegalArgumentException("Decimal point without an integer before it");
+                }
 				state = "DEC";
-			}
-			if(tempval == 's' | tempval == 'c' | tempval == 't' | tempval == 'a' | tempval == 'd' | (tempval == 'p' && function.charAt(pointer + 1) == 'r') | tempval == 'f' | tempval == 'i') { //All functions like sin, tan, der, int, pro
+			} else if(tempval == 's' | tempval == 'c' | tempval == 't' | 
+                      tempval == 'a' | tempval == 'd' | (tempval == 'p' && function.charAt(pointer + 1) == 'r') | 
+                      tempval == 'f' | tempval == 'i') { //All functions like sin, tan, der, int, pro
 				if(tempval != 'a' | function.charAt(pointer + 1) == 'b') {  //For all functions except arcsin,...,arccot. Includes abs as an edge case
 					operation.add("" + tempval + function.charAt(pointer + 1) + function.charAt(pointer + 2));
 					pointer += 2;
@@ -1330,19 +1351,22 @@ public class App extends JPanel {
 					operation.add("" + tempval + tempadder);
 					pointer += 5;
 				}
-				state = "IDLE";
-			}
-            if(tempval == 'l') { //If ln or log
+				state = "FUNC";
+			} else if(tempval == 'l') { //If ln or log
+                if(!(state.equals("ST") | state.equals("OP"))) {
+                    throw new IllegalArgumentException("Function is being declared but not following an operator");
+                }
                 if(function.charAt(pointer + 1) == 'n') { //If ln
                     operation.add("" + tempval + function.charAt(pointer + 1));
                     pointer++;
-                } else { //If log
+                } else if(function.charAt(pointer + 1) == 'o' && function.charAt(pointer + 2) == 'g') { //If log
                     operation.add("" + tempval + function.charAt(pointer + 1) + function.charAt(pointer + 2));
                     pointer += 2;
+                } else {
+                    throw new IllegalArgumentException("Invalid function");
                 }
-                state = "IDLE";
-            }
-			if (tempval == ')') { //If at end of expression, add remaining number if it exists to the ArrayList
+                state = "FUNC";
+            } else if (tempval == ')') { //If at end of expression, add remaining number if it exists to the ArrayList
 				if(state.equals("DEC")) {
 					num += dec/(Math.pow(10, decimalcounter));
 					state = "NUM";
@@ -1356,14 +1380,14 @@ public class App extends JPanel {
                 //Move pointer beyond the ) to prevent an infinite loop
 				parseIndex.set(functionIndex, parseIndex.get(functionIndex) + pointer);
 				return operation;
-			}
-			if (tempval == '(') { //Parse the expression within the parentheses and add result to ArrayList
+			} else if (tempval == '(') { //Parse the expression within the parentheses and add result to ArrayList
 				operation.add(ParseFunction(function.substring(pointer), functionIndex));
                 //Move pointer beyond the last ) so that it moves to the next expression
 				pointer += parseIndex.get(functionIndex);
 				parseIndex.set(functionIndex, 0);
-			}
-			if (tempval > 47 && tempval < 58) { //Only add to number/decimal if the character is a number
+                state = "IDLE";
+			} else if (tempval > 47 && tempval < 58) { //Only add to number/decimal if the character is a number
+                //System.out.println(state);
 				if(state.equals("DEC")) {
 					dec = dec * 10 + Double.parseDouble("" + tempval);
 					decimalcounter++;
@@ -1371,16 +1395,19 @@ public class App extends JPanel {
 					num = num * 10 + Integer.parseInt("" + tempval);
 					state = "NUM";
 				}
-			}
-			if (tempval == 'x' | tempval == 'e' | tempval == 'n') { //If variable/constant with length 1
+			} else if (tempval == 'x' | tempval == 'e' | tempval == 'n') { //If variable/constant with length 1
+                if(!(state.equals("OP") | state.equals("ST"))) {
+                    throw new IllegalArgumentException("Constant after a number without an operator inbetween");
+                }
 				operation.add(tempval);
 				state = "IDLE";
-			}
-			if (tempval == 'p' && function.charAt(pointer + 1) == 'i') { //If constant with length 2
+			} else if (tempval == 'p' && function.charAt(pointer + 1) == 'i') { //If constant with length 2
 				operation.add("" + tempval + function.charAt(pointer + 1));
 				pointer++;
 				state = "IDLE";
-			}
+			} else {
+                throw new IllegalArgumentException("Not a valid format!");
+            }
 			pointer++;
 		}
 		return operation;

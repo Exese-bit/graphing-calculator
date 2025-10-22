@@ -50,6 +50,9 @@ public class Function {
                 double higherBound;
                 switch (tempval) {
                     case("log"):
+                        if(formula.size() - i < 3) {
+                            throw new IllegalArgumentException("Log must be followed by two arguments");
+                        }
                         base = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         xVal = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
                         formula.set(i, Math.log(xVal)/Math.log(base));
