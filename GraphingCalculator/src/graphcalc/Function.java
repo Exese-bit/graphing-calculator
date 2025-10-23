@@ -31,7 +31,16 @@ public class Function {
 			}
 			tempval = "" + formula.get(i);
 			char c = tempval.charAt(0);
-			if((c == 's' && (tempval.charAt(1) == 'i' | tempval.charAt(1) == 'e')) | c == 'c' | c == 't' | c == 'a' | (c == 'l' && tempval.charAt(1) == 'n')) { //if a function like sin(x), arccot(x), abs(x), ln(x). Only one inpit for the function 
+			if((c == 's' && (tempval.charAt(1) == 'i' | tempval.charAt(1) == 'e')) | c == 'c' | c == 't' | c == 'a' | (c == 'l' && tempval.charAt(1) == 'n')) { //if a function like sin(x), arccot(x), abs(x), ln(x). Only one input for the function
+                if(formula.size() - i < 2) {
+                    throw new IllegalArgumentException("Trig, abs, and ln must be followed by one argument");
+                }
+                if(formula.size() - i > 2) {
+                    String test = formula.get(i + 2) + "";
+                    if(test.charAt(0) == '[') {
+                        throw new IllegalArgumentException("Trig, abs, and ln can only have one argument");
+                    }
+                }
 				double temporaryResult = Operations(tempval, 0, evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n));
 				formula.set(i, temporaryResult);
 				formula.remove(i + 1);
@@ -53,18 +62,42 @@ public class Function {
                         if(formula.size() - i < 3) {
                             throw new IllegalArgumentException("Log must be followed by two arguments");
                         }
+                        if(formula.size() - i > 3) {
+                            String test = formula.get(i + 3) + "";
+                            if(test.charAt(0) == '[') {
+                                throw new IllegalArgumentException("Log can only have two arguments");
+                            }
+                        }
                         base = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         xVal = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
                         formula.set(i, Math.log(xVal)/Math.log(base));
                         formula.remove(i + 1);
                         break;
-                    case("der"): //Derivatives 
+                    case("der"): //Derivatives
+                        if(formula.size() - i < 3) {
+                            throw new IllegalArgumentException("Derivatives must be followed by two arguments");
+                        }
+                        if(formula.size() - i > 3) {
+                            String test = formula.get(i + 3) + "";
+                            if(test.charAt(0) == '[') {
+                                throw new IllegalArgumentException("Derivatives can only have two arguments");
+                            }
+                        }
                         xVal = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         Derivative tempdev = new Derivative(xVal, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)));
                         formula.set(i, tempdev.evaluate());
                         formula.remove(i + 1);
                         break;
                     case("sum"): //Sums (Sigma notation)
+                        if(formula.size() - i < 4) {
+                            throw new IllegalArgumentException("Sums must be followed by three arguments");
+                        }
+                        if(formula.size() - i > 4) {
+                            String test = formula.get(i + 4) + "";
+                            if(test.charAt(0) == '[') {
+                                throw new IllegalArgumentException("Sums can only have three arguments");
+                            }
+                        }
                         xVal = x;
                         lowerBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         higherBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
@@ -74,6 +107,15 @@ public class Function {
                         formula.remove(i + 1);
                         break;
                     case("pro"): //Products (Pi notation)
+                        if(formula.size() - i < 4) {
+                            throw new IllegalArgumentException("Products must be followed by three arguments");
+                        }
+                        if(formula.size() - i > 4) {
+                            String test = formula.get(i + 4) + "";
+                            if(test.charAt(0) == '[') {
+                                throw new IllegalArgumentException("Products can only have three arguments");
+                            }
+                        }
                         xVal = x;
                         lowerBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         higherBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
@@ -83,10 +125,28 @@ public class Function {
                         formula.remove(i + 1);
                         break;
                     case("fac"): //Factorial
+                        if(formula.size() - i < 2) {
+                            throw new IllegalArgumentException("Factorials must be followed by one argument");
+                        }
+                        if(formula.size() - i > 2) {
+                            String test = formula.get(i + 2) + "";
+                            if(test.charAt(0) == '[') {
+                                throw new IllegalArgumentException("Factorials can only have one argument");
+                            }
+                        }
                         Factorial tempfac = new Factorial(new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), x);
                         formula.set(i, tempfac.evaluate());
                         break;
                     case("int"): //Integral 
+                        if(formula.size() - i < 4) {
+                            throw new IllegalArgumentException("Integrals must be followed by three arguments");
+                        }
+                        if(formula.size() - i > 4) {
+                            String test = formula.get(i + 4) + "";
+                            if(test.charAt(0) == '[') {
+                                throw new IllegalArgumentException("Integrals can only have three arguments");
+                            }
+                        }
                         lowerBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 1)), n);
                         higherBound = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i + 2)), n);
                         Integral tempintegral = new Integral(new ArrayList<Object>((ArrayList<Object>)formula.get(i + 3)), lowerBound, higherBound);
