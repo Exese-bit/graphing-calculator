@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.border.LineBorder;
 import javax.swing.*;
+
 /*
  * A graphing calculator built completely from scratch with a custom parser, math engine, GUI, and graphing algorithm. Utilizes the Java Math class for basic operations and trigonometry. Built with Swing.
  *
@@ -1381,6 +1382,11 @@ public class App extends JPanel {
 				parseIndex.set(functionIndex, parseIndex.get(functionIndex) + pointer);
 				return operation;
 			} else if (tempval == '(') { //Parse the expression within the parentheses and add result to ArrayList
+                if(!state.equals("ST")) {
+                    if(!(function.charAt(pointer - 1) == ')' | state.equals("FUNC") | state.equals("OP"))) {
+                        throw new IllegalArgumentException("Parentheses must be after a function or operator");
+                    }
+                }
 				operation.add(ParseFunction(function.substring(pointer), functionIndex));
                 //Move pointer beyond the last ) so that it moves to the next expression
 				pointer += parseIndex.get(functionIndex);

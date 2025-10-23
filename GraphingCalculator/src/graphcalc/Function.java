@@ -15,23 +15,19 @@ public class Function {
 	public double evaluate(double x, ArrayList<Object> formula, double n)  {
 		String tempval;
 		for(int i = 0; i < formula.size(); i++) {
+            tempval = "" + formula.get(i);
+			char c = tempval.charAt(0);
 
             //If the term is a constant/value 
 			if((formula.get(i) + "").equals("x")) {
 				formula.set(i, (x));
-			}
-            if((formula.get(i) + "").equals("n")) {
+			} else if((formula.get(i) + "").equals("n")) {
                 formula.set(i, (n));
-            }
-			if((formula.get(i) + "").equals("pi")) {
+            } else if((formula.get(i) + "").equals("pi")) {
 				formula.set(i, Math.PI);
-			}
-			if((formula.get(i) + "").equals("e")) {
+			} else if((formula.get(i) + "").equals("e")) {
 				formula.set(i, Math.E);
-			}
-			tempval = "" + formula.get(i);
-			char c = tempval.charAt(0);
-			if((c == 's' && (tempval.charAt(1) == 'i' | tempval.charAt(1) == 'e')) | c == 'c' | c == 't' | c == 'a' | (c == 'l' && tempval.charAt(1) == 'n')) { //if a function like sin(x), arccot(x), abs(x), ln(x). Only one input for the function
+			} else if((c == 's' && (tempval.charAt(1) == 'i' | tempval.charAt(1) == 'e')) | c == 'c' | c == 't' | c == 'a' | (c == 'l' && tempval.charAt(1) == 'n')) { //if a function like sin(x), arccot(x), abs(x), ln(x). Only one input for the function
                 if(formula.size() - i < 2) {
                     throw new IllegalArgumentException("Trig, abs, and ln must be followed by one argument");
                 }
@@ -47,7 +43,7 @@ public class Function {
 			}
 
             //If the term is a more complex function/operation with multiple inputs
-            if(tempval.equals("log") | tempval.equals("der") | tempval.equals("sum") | tempval.equals("pro") | tempval.equals("fac") | tempval.equals("int")) {
+            else if(tempval.equals("log") | tempval.equals("der") | tempval.equals("sum") | tempval.equals("pro") | tempval.equals("fac") | tempval.equals("int")) {
                 double xVal;
                 double base;
                 double lowerBound;
@@ -155,7 +151,7 @@ public class Function {
                 formula.remove(i + 1);
             }
             //If the term is another arrayList, recursively call evaluate for the expression within the arrayList
-            if(tempval.length() > 1 && c == '[') {
+            else if(tempval.length() > 1 && c == '[') {
                 if(i > 0) {
                     String compare = formula.get(i - 1) + "";
                     try {
@@ -170,7 +166,15 @@ public class Function {
                 }
 				double tempres = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i)), n);
 				formula.set(i, tempres);
-			}
+			} else {
+                if(!isValidOperator(tempval)) {
+                    try {
+                        double test = Double.parseDouble(tempval);
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("Not a valid function");
+                    }
+                }
+            }
 		}
         //To handle negative numbers 
 		for(int i = 0; i < formula.size(); i++) {
@@ -245,7 +249,7 @@ public class Function {
             return false;
         } else {
             char c = operator.charAt(0);
-            if(!(c == '+' | c == '-' | c == '*' | c == '/' | c == '^')) {
+            if(c == '+' | c == '-' | c == '*' | c == '/' | c == '^') {
                 return true;
             } else {
                 return false;
@@ -311,7 +315,6 @@ public class Function {
     //Defines how to calculate the value of an operation and returns the value of that operation 
 	private double Operations(String operator, double result, double operand) {
 		double res = result;
-	    
         switch (operator) {
             case("+"):
 		    	res += operand;
@@ -371,7 +374,7 @@ public class Function {
                 res = Math.log(operand);
                 break;
             default:
-                res = 0;
+                throw new IllegalArgumentException("Not a valid Function/operation");
 		}
 		
 		return res;
