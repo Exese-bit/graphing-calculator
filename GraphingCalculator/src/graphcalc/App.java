@@ -552,7 +552,7 @@ public class App extends JPanel {
             if(!input.equals("")) {
                 if(input.indexOf("=") == 1) {
                     input = input.substring(input.indexOf("=") + 1);
-                    func = "(" + input + ")";
+                    func = "(0+" + input + ")";
                 } else {
                     func = "y";
                 }
@@ -1406,7 +1406,7 @@ public class App extends JPanel {
 				pointer++;
 				state = "IDLE";
 			} else {
-                throw new IllegalArgumentException("Not a valid format!");
+                throw new IllegalArgumentException(tempval + " is not a valid input");
             }
 			pointer++;
 		}

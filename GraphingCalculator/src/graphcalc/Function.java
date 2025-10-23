@@ -45,11 +45,6 @@ public class Function {
 				formula.set(i, temporaryResult);
 				formula.remove(i + 1);
 			}
-            //If the term is another arrayList, recursively call evaluate for the expression within the arrayList 
-			if(tempval.length() > 1 && c == '[') {
-				double tempres = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i)), n);
-				formula.set(i, tempres);
-			}
 
             //If the term is a more complex function/operation with multiple inputs
             if(tempval.equals("log") | tempval.equals("der") | tempval.equals("sum") | tempval.equals("pro") | tempval.equals("fac") | tempval.equals("int")) {
@@ -159,6 +154,23 @@ public class Function {
                 } 
                 formula.remove(i + 1);
             }
+            //If the term is another arrayList, recursively call evaluate for the expression within the arrayList
+            if(tempval.length() > 1 && c == '[') {
+                if(i > 0) {
+                    String compare = formula.get(i - 1) + "";
+                    try {
+                        double test = Double.parseDouble(compare);
+                        throw new IllegalArgumentException("Parentheses cannot be followed after a number/variable");
+                    } catch (NumberFormatException e) {
+
+                    }
+                    if(!isValidOperator(compare)) {
+                        throw new IllegalArgumentException("Parentheses must be after a function or operator"); 
+                    }
+                }
+				double tempres = evaluate(x, new ArrayList<Object>((ArrayList<Object>)formula.get(i)), n);
+				formula.set(i, tempres);
+			}
 		}
         //To handle negative numbers 
 		for(int i = 0; i < formula.size(); i++) {
@@ -196,7 +208,6 @@ public class Function {
          *
          */
 		int operationOrder = 0; 
-
         //Uses operationOrder to determine value of final arrayList, which is now only composed of doubles and operations 
 		while(formula.size() > 1) {
 			for(int i = 1; i < formula.size(); i += 2) {
@@ -204,30 +215,44 @@ public class Function {
 				char c = tempval.charAt(0);
 				double tempresult = 0;
 				boolean changeArray = false;
-				if(operationOrder == 0 && c == '^') {
-					tempresult = Operations(tempval, (double)formula.get(i - 1), (double)formula.get(i + 1));
-					changeArray = true;
-				}
-				if(operationOrder == 1 && (c == '/' | c == '*')) {
-					tempresult = Operations(tempval, (double)formula.get(i - 1), (double)formula.get(i + 1));
-					changeArray = true;
-				}
-				if(operationOrder == 2 && (c == '+' | c == '-')) {
-					tempresult = Operations(tempval, (double)formula.get(i - 1), (double)formula.get(i + 1));
-					changeArray = true;
-				}
-				if(changeArray) { //If that operation has been completed, replace the two doubles and sign with one value 
-					formula.set(i - 1, tempresult);
-					formula.remove(i);
-					formula.remove(i);
-					i -= 2;
-				}
+            
+                    if(operationOrder == 0 && c == '^') {
+                        tempresult = Operations(tempval, (double)formula.get(i - 1), (double)formula.get(i + 1));
+                        changeArray = true;
+                    }
+                    if(operationOrder == 1 && (c == '/' | c == '*')) {
+                        tempresult = Operations(tempval, (double)formula.get(i - 1), (double)formula.get(i + 1));
+                        changeArray = true;
+                    }
+                    if(operationOrder == 2 && (c == '+' | c == '-')) {
+                        tempresult = Operations(tempval, (double)formula.get(i - 1), (double)formula.get(i + 1));
+                        changeArray = true;
+                    }
+                    if(changeArray) { //If that operation has been completed, replace the two doubles and sign with one value 
+                        formula.set(i - 1, tempresult);
+                        formula.remove(i);
+                        formula.remove(i);
+                        i -= 2;
+                    }
 			}
 			operationOrder++;
 		}
 		return (double)formula.get(0);
 	}
-	
+    
+    public static boolean isValidOperator(String operator) {
+        if(operator.length() < 1) {
+            return false;
+        } else {
+            char c = operator.charAt(0);
+            if(!(c == '+' | c == '-' | c == '*' | c == '/' | c == '^')) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     /* 
      * Finds all 601 y values associated with the 601 x values within the range of [lowerX, higherX] (Overloaded version of original findYValues method)
      *
