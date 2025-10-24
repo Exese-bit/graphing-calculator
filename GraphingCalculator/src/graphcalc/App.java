@@ -1008,18 +1008,22 @@ public class App extends JPanel {
 			parseIndex.add(0);
 			yValuePositions.add(new String[601]);
 			yPointPositions.add(new int[601]);
-
-			ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
-			Function input = new Function(formula);
-
-            //Calculate all y values for the function's range 
-            if(showProgress) { //Create a new thread which will update the consoleText with the globalProgress once a function has been evaluated at an x 
-                CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress, globalProgress, totalWork);
-                valuesList.add(futureValues);
-            } else { //Simply evaluate but do not create a seperate thread 
-                yValues.add(input.findYValues(minimumX, maximumX));
+            
+            try {
+			    ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
+			    Function input = new Function(formula);
+                if(showProgress) { //Create a new thread which will update the consoleText with the globalProgress once a function has been evaluated at an x 
+                    CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress, globalProgress, totalWork);
+                    valuesList.add(futureValues);
+                } else { //Simply evaluate but do not create a seperate thread 
+                    yValues.add(input.findYValues(minimumX, maximumX));
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println(e);
             }
-			initialX.add(minimumX);
+
+            //Calculate all y values for the function's range
+            initialX.add(minimumX);
 			finalX.add(maximumX);
 		}
         if(showProgress) {
@@ -1031,6 +1035,9 @@ public class App extends JPanel {
                     yValues.add(c.join());
                 }
                 for(int i = 0; i < functionCollection.size(); i++) {
+                    if((yValues.get(i)[0] + "").equals("NaN")) {
+                        System.out.println("Error");
+                    }
                     graph(i);
                 }
                 deleteLines();
@@ -1334,13 +1341,15 @@ public class App extends JPanel {
 				state = "OP";
 			} else if(tempval == '.') { //Enter decimal state if there is a decimal point after the number
                 if(!state.equals("NUM")) {
-                    System.out.println("no");
                     throw new IllegalArgumentException("Decimal point without an integer before it");
                 }
 				state = "DEC";
 			} else if(tempval == 's' | tempval == 'c' | tempval == 't' | 
                       tempval == 'a' | tempval == 'd' | (tempval == 'p' && function.charAt(pointer + 1) == 'r') | 
                       tempval == 'f' | tempval == 'i') { //All functions like sin, tan, der, int, pro
+                if(!(state.equals("OP") | state.equals("FUNC") | state.equals("ST"))) {
+                    throw new IllegalArgumentException("Function must follow an operator or other function");
+                }
 				if(tempval != 'a' | function.charAt(pointer + 1) == 'b') {  //For all functions except arcsin,...,arccot. Includes abs as an edge case
 					operation.add("" + tempval + function.charAt(pointer + 1) + function.charAt(pointer + 2));
 					pointer += 2;

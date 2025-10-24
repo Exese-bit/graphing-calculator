@@ -171,7 +171,7 @@ public class Function {
                     try {
                         double test = Double.parseDouble(tempval);
                     } catch (NumberFormatException e) {
-                        throw new IllegalArgumentException("Not a valid function");
+                        throw new IllegalArgumentException(tempval + " is not a valid function");
                     }
                 }
             }
@@ -274,7 +274,11 @@ public class Function {
             double xVal = lowerX;
             for(int x = 0; x <= 600; x += 1) {
                 if(equation.size() > 0) {
-                    YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
+                    try {
+                        YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
+                    } catch (IllegalArgumentException e) {
+                        YValues[x] = Double.NaN;
+                    }
                 } else {
                     YValues[x] = Double.NaN;
                 }
@@ -374,7 +378,7 @@ public class Function {
                 res = Math.log(operand);
                 break;
             default:
-                throw new IllegalArgumentException("Not a valid Function/operation");
+                throw new IllegalArgumentException(operator + " is not a valid Function/operation");
 		}
 		
 		return res;
