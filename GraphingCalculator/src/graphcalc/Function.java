@@ -265,7 +265,7 @@ public class Function {
      *  Each thread will eventually return a CompletableFuture as each y value has been computed
      *     
      */
-    public CompletableFuture<double[]> findYValues(double lowerX, double higherX, JLabel console, boolean showProgress, AtomicInteger progress, int totalWork) {
+    public CompletableFuture<double[]> findYValues(double lowerX, double higherX, JLabel console, boolean showProgress, AtomicInteger progress, int totalWork, Index index) {
         CompletableFuture<double[]> futureValues = new CompletableFuture<>();
 
 		double[] YValues = new double[601];
@@ -278,6 +278,9 @@ public class Function {
                         YValues[x] = evaluate(xVal, new ArrayList<Object>(equation), 0);
                     } catch (IllegalArgumentException e) {
                         YValues[x] = Double.NaN;
+                        String error = e + "";
+                        error = error.substring(error.indexOf(":") + 2);
+                        index.updateError(error);
                     }
                 } else {
                     YValues[x] = Double.NaN;

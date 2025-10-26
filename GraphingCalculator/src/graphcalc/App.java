@@ -565,6 +565,7 @@ public class App extends JPanel {
             grid.clearPixels();
             grid.updateGrid(functionCollection);
             setUpGraph(true);
+            displayErrors();
 
             textField.transferFocus();
             textField.setCaretPosition(0);
@@ -590,6 +591,7 @@ public class App extends JPanel {
             grid.clearPixels();
             grid.updateGrid(functionCollection);
             setUpGraph(true);
+            displayErrors();
 
             rowPanels.remove(index);
             rowButtons.remove(index);
@@ -920,7 +922,11 @@ public class App extends JPanel {
 				shiftX += -increment;
 				parseIndex.clear();
 				for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                    if(!functionCollection.get(functionIndex).equals("")) { //Only shift values if the function is not empty (causes exception if included)
+                    boolean isValid = true;
+                    if(yValues.get(functionIndex).length == 0) {
+                        isValid = false;
+                    }
+                    if(!functionCollection.get(functionIndex).equals("") && isValid) { //Only shift values if the function is not empty (causes exception if included)
                         for(int i = 1; i < yValues.get(0).length; i++) {
                             yValues.get(functionIndex)[i - 1] = yValues.get(functionIndex)[i];
                         }
@@ -943,7 +949,11 @@ public class App extends JPanel {
 				shiftX += increment;
 				parseIndex.clear();
 				for(int functionIndex = 0; functionIndex < functionCollection.size(); functionIndex++) {
-                    if(!functionCollection.get(functionIndex).equals("")) { //Only shift values if the function is not empty (causes exception if included)
+                    boolean isValid = true;
+                    if(yValues.get(functionIndex).length == 0) {
+                        isValid = false;
+                    }
+                    if(!functionCollection.get(functionIndex).equals("") && isValid) { //Only shift values if the function is not empty (causes exception if included)
                         for(int i = yValues.get(0).length - 1; i > 0; i--) {
                             yValues.get(functionIndex)[i] = yValues.get(functionIndex)[i - 1];
                         }
@@ -1012,14 +1022,18 @@ public class App extends JPanel {
             try {
 			    ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
 			    Function input = new Function(formula);
+                highlightRow(functionIndex, Color.white);
                 if(showProgress) { //Create a new thread which will update the consoleText with the globalProgress once a function has been evaluated at an x 
-                    CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress, globalProgress, totalWork);
+                    CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress, globalProgress, totalWork, indexes.get(functionIndex));
                     valuesList.add(futureValues);
                 } else { //Simply evaluate but do not create a seperate thread 
                     yValues.add(input.findYValues(minimumX, maximumX));
                 }
             } catch (IllegalArgumentException e) {
-                System.out.println(e);
+                highlightRow(functionIndex, new Color(255, 170, 170));
+                String error = e + "";
+                error = error.substring(error.indexOf(":") + 2);
+                indexes.get(functionIndex).updateError(error);
             }
 
             //Calculate all y values for the function's range
@@ -1036,7 +1050,9 @@ public class App extends JPanel {
                 }
                 for(int i = 0; i < functionCollection.size(); i++) {
                     if((yValues.get(i)[0] + "").equals("NaN")) {
-                        System.out.println("Error");
+                        highlightRow(i, new Color(255, 170, 170));
+                    } else {
+                        highlightRow(i, Color.white);
                     }
                     graph(i);
                 }
@@ -1044,11 +1060,19 @@ public class App extends JPanel {
                 fixGraph();
                 createLines();
                 createLabels();
-                updateConsole("");
             });
-        }
+        } 
 	}
 	
+    public static void displayErrors() {
+        for(int i = 0; i < indexes.size(); i++) {
+            if(!indexes.get(i).getError().equals("")) {
+                updateConsole(i + ": " + indexes.get(i).getError());
+
+            }
+        }
+    }
+
     //changes the range variables depending on zooming in(+1) or zooming out(-1)
 	public static void zoom(double sign) {
 		double increment = sign * (maximumX - minimumX)/100;
@@ -1272,6 +1296,13 @@ public class App extends JPanel {
                 }
             }
         }
+    }
+    
+    public static void highlightRow(int functionIndex, Color color) {
+        selectPanels.get(functionIndex).setBackground(color);
+        rowPanels.get(functionIndex).setBackground(color);
+        textFields.get(functionIndex).setBackground(color);
+        removePanels.get(functionIndex).setBackground(color);
     }
 
     //Creates a pixel at the default level for the graph, used only for the function's pixels 
