@@ -64,6 +64,7 @@ public class App extends JPanel {
 	private static Double shiftY;
 	private static boolean isShowingPoint;
     private static int selectedFunction;
+    private static boolean isGraphing;
 
     //variables to handle axis lines
 	private static double[] xLines;
@@ -91,7 +92,7 @@ public class App extends JPanel {
     private static JLabel consoleText;
     
 	public static void main(String[] args) {
-
+        
 		Scanner userinput = new Scanner(System.in);
 
 		System.out.println("____________________________________________________\n");
@@ -119,6 +120,9 @@ public class App extends JPanel {
 
 		grid.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
+                if(isGraphing) {
+                    return;
+                }
                 if(!isShowingPoint) {
                     if(e.getKeyChar() == KeyEvent.VK_ENTER) {
                         addRow(rowPanels.size());
@@ -172,6 +176,9 @@ public class App extends JPanel {
 		});
 		grid.addMouseMotionListener(new MouseAdapter() {
 			public void mouseDragged(MouseEvent e) {
+                if(isGraphing) {
+                    return;
+                }
                 if(!isShowingPoint) { //If panning
                     if(e.getX() - prevX != 0) { //If panning sideways
                         int diff = e.getX() - prevX;
@@ -245,6 +252,9 @@ public class App extends JPanel {
 		});
 		grid.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
+                if(isGraphing) {
+                    return;
+                }
 				prevX = e.getX();
 				prevY = e.getY(); 
                 int touching = -1;
@@ -369,6 +379,7 @@ public class App extends JPanel {
         pointVisualizerLabels = new JLabel[7];
 
         isShowingPoint = false;
+        isGraphing = false;
 
         frame = new JFrame("Pixel Grid");
         frame.setSize(901, 631);
@@ -997,6 +1008,7 @@ public class App extends JPanel {
      *  if showProgress is false, it will compute each function's y values by calling the original Function.findYValues and will not graph afterwards
      */
 	public static void setUpGraph(boolean showProgress) {
+        isGraphing = true;
         grid.clearPixels();
         grid.clearPixels();
 		parseIndex.clear();
@@ -1010,7 +1022,9 @@ public class App extends JPanel {
         allCoordinates.clear();
 		initialX.clear();
 		finalX.clear();
-        resetErrors();
+        if(showProgress) {
+            resetErrors();
+        }
 
         ArrayList<CompletableFuture<double[]>> valuesList = new ArrayList<>();
         AtomicInteger globalProgress = new AtomicInteger(0);
@@ -1029,7 +1043,6 @@ public class App extends JPanel {
             try {
 			    ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
 			    Function input = new Function(formula);
-                highlightRow(functionIndex, Color.white);
                 if(showProgress) { //Create a new thread which will update the consoleText with the globalProgress once a function has been evaluated at an x 
                     CompletableFuture<double[]> futureValues = input.findYValues(minimumX, maximumX, consoleText, showProgress, globalProgress, totalWork, indexes.get(functionIndex));
                     valuesList.add(futureValues);
@@ -1037,7 +1050,6 @@ public class App extends JPanel {
                     yValues.add(input.findYValues(minimumX, maximumX));
                 }
             } catch (IllegalArgumentException e) {
-                highlightRow(functionIndex, new Color(255, 170, 170));
                 String error = e + "";
                 error = error.substring(error.indexOf(":") + 2);
                 indexes.get(functionIndex).updateError(error);
@@ -1075,7 +1087,9 @@ public class App extends JPanel {
                 createLabels();
                 displayErrors();
             });
-        } 
+        } else {
+            isGraphing = false;
+        }
 	}
     
     public static void resetErrors() {
@@ -1087,10 +1101,13 @@ public class App extends JPanel {
     public static void displayErrors() {
         for(int i = 0; i < indexes.size(); i++) {
             if(!indexes.get(i).getError().equals("")) {
+                highlightRow(i, new Color(255, 170, 170));
                 final int functionIndex = i;
                 SwingUtilities.invokeLater(() -> {
                     updateConsole(functionIndex + ": " + indexes.get(functionIndex).getError());
                 });
+            } else {
+                highlightRow(i, Color.white);
             }
         }
     }
@@ -1112,6 +1129,7 @@ public class App extends JPanel {
 
     //sets up the point pairs, used for line drawing later when anti-aliasing. 
 	public static void graph(int functionIndex) {
+        isGraphing = true;
 		double range = finalX.get(functionIndex) - initialX.get(functionIndex);
 		double increment = (range/600);
 		double precision = increment/2;
@@ -1210,6 +1228,7 @@ public class App extends JPanel {
 
         //Create the lines between the point pairs 
         fillLines(range, increment, functionIndex, precision);
+        isGraphing = false;
 	}
     
     //draws the lines between points (contained within the point pairs) and antialiases these lines 
@@ -1373,7 +1392,7 @@ public class App extends JPanel {
             //System.out.println(tempval);
             if(state.equals("FUNC")) {
                 if(tempval != '(') {
-                    throw new IllegalArgumentException("A function must be followed by parentheses");
+                    throw new IllegalArgumentException("A function must be followed by parentheses (check that function is spelled correctly)");
                 }
             }
 			if (tempval == '+' | tempval == '-' | tempval == '*' | tempval == '/' | tempval == '^') { //If the character is a basic operation
