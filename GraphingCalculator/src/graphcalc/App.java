@@ -924,17 +924,21 @@ public class App extends JPanel {
                     if(yValues.get(functionIndex).length == 0) {
                         isValid = false;
                     }
-                    if(!functionCollection.get(functionIndex).equals("") && isValid) { //Only shift values if the function is not empty (causes exception if included)
-                        for(int i = 1; i < yValues.get(0).length; i++) {
-                            yValues.get(functionIndex)[i - 1] = yValues.get(functionIndex)[i];
+                    try {
+                        if(!functionCollection.get(functionIndex).equals("") && isValid) { //Only shift values if the function is not empty (causes exception if included)
+                            for(int i = 1; i < yValues.get(0).length; i++) {
+                                yValues.get(functionIndex)[i - 1] = yValues.get(functionIndex)[i];
+                            }
+                            parseIndex.add(0);
+                            //Evaluate the edge value 
+                            ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
+                            Function tempfunction = new Function(formula);
+                            yValues.get(functionIndex)[yValues.get(functionIndex).length - 1] = tempfunction.evaluate(maximumX + increment, new ArrayList<Object>(formula), 0);
+                        } else {
+                            parseIndex.add(0); //Fixes bug where empty functions would throw an exception if the graph was panned because the parseIndex size did not match functionCollection size
                         }
-                        parseIndex.add(0);
-                        //Evaluate the edge value 
-                        ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
-                        Function tempfunction = new Function(formula);
-                        yValues.get(functionIndex)[yValues.get(functionIndex).length - 1] = tempfunction.evaluate(maximumX + increment, new ArrayList<Object>(formula), 0);
-                    } else {
-                        parseIndex.add(0); //Fixes bug where empty functions would throw an exception if the graph was panned because the parseIndex size did not match functionCollection size
+                    } catch (IllegalArgumentException e) {
+
                     }
 				}
 				minimumX += increment;
@@ -951,17 +955,21 @@ public class App extends JPanel {
                     if(yValues.get(functionIndex).length == 0) {
                         isValid = false;
                     }
-                    if(!functionCollection.get(functionIndex).equals("") && isValid) { //Only shift values if the function is not empty (causes exception if included)
-                        for(int i = yValues.get(0).length - 1; i > 0; i--) {
-                            yValues.get(functionIndex)[i] = yValues.get(functionIndex)[i - 1];
+                    try {
+                        if(!functionCollection.get(functionIndex).equals("") && isValid) { //Only shift values if the function is not empty (causes exception if included)
+                            for(int i = yValues.get(0).length - 1; i > 0; i--) {
+                                yValues.get(functionIndex)[i] = yValues.get(functionIndex)[i - 1];
+                            }
+                            parseIndex.add(0);
+                            //Evaluate the edge value
+                            ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
+                            Function tempfunction = new Function(formula);
+                            yValues.get(functionIndex)[0] = tempfunction.evaluate(minimumX - increment, new ArrayList<Object>(formula), 0);
+                        } else {
+                            parseIndex.add(0); //Fixes bug where empty functions would throw an exception if the graph was panned because the parseIndex size did not match functionCollection size
                         }
-                        parseIndex.add(0);
-                        //Evaluate the edge value 
-                        ArrayList<Object> formula = ParseFunction(functionCollection.get(functionIndex), functionIndex);
-                        Function tempfunction = new Function(formula);
-                        yValues.get(functionIndex)[0] = tempfunction.evaluate(minimumX - increment, new ArrayList<Object>(formula), 0);
-                    } else {
-                        parseIndex.add(0); //Fixes bug where empty functions would throw an exception if the graph was panned because the parseIndex size did not match functionCollection size
+                    } catch (IllegalArgumentException e) {
+                        
                     }
 				}
 				minimumX -= increment;
@@ -1002,6 +1010,7 @@ public class App extends JPanel {
         allCoordinates.clear();
 		initialX.clear();
 		finalX.clear();
+        resetErrors();
 
         ArrayList<CompletableFuture<double[]>> valuesList = new ArrayList<>();
         AtomicInteger globalProgress = new AtomicInteger(0);
@@ -1068,7 +1077,13 @@ public class App extends JPanel {
             });
         } 
 	}
-	
+    
+    public static void resetErrors() {
+        for(int i = 0; i < indexes.size(); i++) {
+            indexes.get(i).updateError("");
+        }
+    }
+
     public static void displayErrors() {
         for(int i = 0; i < indexes.size(); i++) {
             if(!indexes.get(i).getError().equals("")) {
