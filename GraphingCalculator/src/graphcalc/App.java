@@ -565,7 +565,6 @@ public class App extends JPanel {
             grid.clearPixels();
             grid.updateGrid(functionCollection);
             setUpGraph(true);
-            displayErrors();
 
             textField.transferFocus();
             textField.setCaretPosition(0);
@@ -591,7 +590,6 @@ public class App extends JPanel {
             grid.clearPixels();
             grid.updateGrid(functionCollection);
             setUpGraph(true);
-            displayErrors();
 
             rowPanels.remove(index);
             rowButtons.remove(index);
@@ -1034,6 +1032,12 @@ public class App extends JPanel {
                 String error = e + "";
                 error = error.substring(error.indexOf(":") + 2);
                 indexes.get(functionIndex).updateError(error);
+                if(showProgress) {
+                    CompletableFuture<double[]> emptyValues = Function.getEmptyFutureArray();
+                    valuesList.add(emptyValues);
+                } else {
+                    yValues.add(Function.getEmptyArray());
+                }
             }
 
             //Calculate all y values for the function's range
@@ -1060,6 +1064,7 @@ public class App extends JPanel {
                 fixGraph();
                 createLines();
                 createLabels();
+                displayErrors();
             });
         } 
 	}
@@ -1067,8 +1072,10 @@ public class App extends JPanel {
     public static void displayErrors() {
         for(int i = 0; i < indexes.size(); i++) {
             if(!indexes.get(i).getError().equals("")) {
-                updateConsole(i + ": " + indexes.get(i).getError());
-
+                final int functionIndex = i;
+                SwingUtilities.invokeLater(() -> {
+                    updateConsole(functionIndex + ": " + indexes.get(functionIndex).getError());
+                });
             }
         }
     }

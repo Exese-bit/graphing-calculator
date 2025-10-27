@@ -318,6 +318,22 @@ public class Function {
 		}
 		return YValues;
 	}
+    
+    public static CompletableFuture<double[]> getEmptyFutureArray() {
+        double[] empty = getEmptyArray(); 
+        CompletableFuture<double[]> retArr = new CompletableFuture<>();
+        retArr.complete(empty);
+        return retArr;
+    }
+
+    public static double[] getEmptyArray() {
+        double[] empty = new double[601];
+        for(int i = 0; i < 601; i++) {
+            empty[i] = Double.NaN;
+        }
+        return empty;
+    }
+
 
     //Defines how to calculate the value of an operation and returns the value of that operation 
 	private double Operations(String operator, double result, double operand) {
