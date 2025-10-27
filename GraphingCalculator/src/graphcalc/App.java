@@ -1397,7 +1397,9 @@ public class App extends JPanel {
             }
 			if (tempval == '+' | tempval == '-' | tempval == '*' | tempval == '/' | tempval == '^') { //If the character is a basic operation
                 if(state.equals("OP")) {
-                    throw new IllegalArgumentException("Operator after another operator");
+                    if(!(tempval == '-' && function.charAt(pointer - 1) == '+')) {
+                        throw new IllegalArgumentException("Operator after another operator");
+                    }
                 }
 				if(state.equals("DEC")) { //Add decimal component to number 
 					num += dec/(Math.pow(10, decimalcounter));
@@ -1459,6 +1461,9 @@ public class App extends JPanel {
 					operation.add(num);
 					num = 0;
 				}
+                if(state.equals("OP")) {
+                    throw new IllegalArgumentException("Operation must be followed by a constant, variable, or function");
+                }
                 //Move pointer beyond the ) to prevent an infinite loop
 				parseIndex.set(functionIndex, parseIndex.get(functionIndex) + pointer);
 				return operation;
@@ -1475,6 +1480,9 @@ public class App extends JPanel {
                 state = "IDLE";
 			} else if (tempval > 47 && tempval < 58) { //Only add to number/decimal if the character is a number
                 //System.out.println(state);
+                if(state.equals("IDLE")) {
+                    throw new IllegalArgumentException("Number needs to be inputted following an operator"); 
+                }
 				if(state.equals("DEC")) {
 					dec = dec * 10 + Double.parseDouble("" + tempval);
 					decimalcounter++;
@@ -1484,11 +1492,14 @@ public class App extends JPanel {
 				}
 			} else if (tempval == 'x' | tempval == 'e' | tempval == 'n') { //If variable/constant with length 1
                 if(!(state.equals("OP") | state.equals("ST"))) {
-                    throw new IllegalArgumentException("Constant after a number without an operator inbetween");
+                    throw new IllegalArgumentException("Constant/variable after a number without an operator inbetween");
                 }
 				operation.add(tempval);
 				state = "IDLE";
 			} else if (tempval == 'p' && function.charAt(pointer + 1) == 'i') { //If constant with length 2
+                if(state.equals("IDLE")) {
+                    throw new IllegalArgumentException("Constant/variable needs to be inputted following an operator");
+                }
 				operation.add("" + tempval + function.charAt(pointer + 1));
 				pointer++;
 				state = "IDLE";
